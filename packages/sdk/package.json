@@ -1,0 +1,50 @@
+{
+  "name": "@repnet/sdk",
+  "version": "0.1.2",
+  "description": "RepNet SDK \u2014 AI Agent Reputation Infrastructure. ERC-8004 identity, x402 payments, OriginTrail DKG receipts on Base.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "repnet",
+    "ai-agents",
+    "reputation",
+    "erc-8004",
+    "x402",
+    "origintrail",
+    "dkg",
+    "base",
+    "ethereum",
+    "a2a",
+    "mcp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dreddster/Rep.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://repnet.wittymermaid.com",
+  "author": "RepNet Protocol",
+  "dependencies": {
+    "ethers": "^6.13.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^4.0.18"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

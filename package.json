@@ -1,0 +1,38 @@
+{
+  "name": "repnet-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RepNet — AI Agent Reputation Infrastructure",
+  "workspaces": [
+    "packages/*",
+    "contracts"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:contracts": "npm run test -w contracts",
+    "test:sdk": "npm run test -w @repnet/sdk",
+    "clean": "npm run clean --workspaces --if-present",
+    "build:public": "npm run build:agentkit && npm run build:eliza && npm run build:core",
+    "build:core": "npm run build -w @repnet/sdk && npm run build -w @repnet/mcp-server && npm run build -w @repnet/vercel-ai && npm run build -w @repnet/cli && npm run build -w @repnet/signer",
+    "build:agentkit": "npm run build -w @repnet/agentkit-plugin",
+    "test:agentkit": "npm run test -w @repnet/agentkit-plugin -- --run src/repnetActionProvider.test.ts",
+    "build:eliza": "npm run build -w @repnet/plugin-eliza",
+    "test:eliza": "npm run test -w @repnet/plugin-eliza -- --run src/index.test.ts",
+    "pack:check": "node scripts/check-pack-surfaces.mjs",
+    "audit:prod": "npm audit --omit=dev",
+    "release:check": "node scripts/check-cli-onboarding-safety.mjs && node scripts/check-cli-onboarding-secret-input.mjs && node scripts/check-cli-setup-invalid-key.mjs && node scripts/check-cli-onboarding-error-format.mjs && node scripts/check-release-readiness.mjs",
+    "onboarding:check": "node scripts/check-cli-onboarding-safety.mjs && node scripts/check-cli-onboarding-secret-input.mjs && node scripts/check-cli-setup-invalid-key.mjs && node scripts/check-cli-onboarding-error-format.mjs",
+    "onboarding:pty-smoke": "python3 scripts/onboarding-pty-smoke.py",
+    "release:smoke": "node scripts/release-dry-run-smoke.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "overrides": {
+    "express-rate-limit": {
+      "ip-address": "10.2.0"
+    }
+  }
+}

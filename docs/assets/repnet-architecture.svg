@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1308" viewBox="0 0 1300 850" role="img" aria-labelledby="title desc">
+  <title id="title">RepNet architecture</title>
+  <desc id="desc">Agents use RepNet interfaces to reach Base Sepolia contracts, off-chain services, and the OriginTrail DKG.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 12 12" refX="9.2" refY="6" markerWidth="4.2" markerHeight="4.2" orient="auto" markerUnits="strokeWidth">
+      <path d="M 2 2 L 10 6 L 2 10 z" fill="#2563eb" />
+    </marker>
+    <style>
+      .bg { fill: #ffffff; }
+      .cluster { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 18; }
+      .cluster-title { font: 600 17px Arial, sans-serif; fill: #475569; }
+      .node-title { font: 400 18px Arial, sans-serif; fill: #0f172a; text-anchor: middle; dominant-baseline: middle; }
+      .node-sub { font: italic 14px Arial, sans-serif; fill: #334155; text-anchor: middle; dominant-baseline: middle; }
+      .entry { fill: #dbeafe; stroke: #1d4ed8; stroke-width: 2; rx: 10; }
+      .contract { fill: #dcfce7; stroke: #15803d; stroke-width: 2; rx: 10; }
+      .service { fill: #fef3c7; stroke: #b45309; stroke-width: 2; rx: 10; }
+      .dkg { fill: #ede9fe; stroke: #6d28d9; stroke-width: 2; rx: 10; }
+      .arrow { fill: none; stroke: #2563eb; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .arrow-soft { fill: none; stroke: #60a5fa; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .arrow-front { fill: none; stroke: #2563eb; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1300" height="850" />
+
+  <!-- Layer backgrounds -->
+  <rect class="cluster" x="360" y="112" width="480" height="92" />
+  <rect class="cluster" x="55" y="240" width="1160" height="135" />
+  <rect class="cluster" x="500" y="435" width="645" height="250" />
+
+  <!-- Arrows are drawn before nodes so connectors never sit on top of labels. -->
+  <path class="arrow" d="M600 90 V148" />
+  <path class="arrow-soft" d="M600 194 C600 225, 205 230, 205 291" />
+  <path class="arrow-soft" d="M600 194 C600 230, 470 238, 470 291" />
+  <path class="arrow-soft" d="M600 194 C600 230, 735 238, 735 291" />
+  <path class="arrow-soft" d="M600 194 C600 225, 1000 230, 1000 291" />
+
+  <!-- Contract to service routes. Keep all long connectors in lanes outside node text. -->
+  <path class="arrow" d="M735 353 V392 H620 V516" />
+  <path class="arrow" d="M1000 353 V496" />
+  <path class="arrow" d="M970 353 V412 H680 V516" />
+
+  <!-- Service interaction routes. Gateway and resolver have a clear vertical gap. -->
+  <path class="arrow" d="M975 576 V606" />
+
+  <!-- DKG publishing routes. -->
+  <path class="arrow" d="M650 596 V710 H760 V731" />
+  <path class="arrow" d="M1000 674 V710 H860 V731" />
+
+  <!-- Entry layer -->
+  <rect class="entry" x="390" y="32" width="420" height="58" />
+  <text class="node-title" x="600" y="61">Agents, apps, marketplaces</text>
+
+  <rect x="374" y="126" width="165" height="25" fill="#f8fafc" />
+  <text class="cluster-title" x="382" y="142">RepNet interfaces</text>
+  <rect class="entry" x="430" y="152" width="340" height="42" />
+  <text class="node-title" x="600" y="173">SDK, CLI, MCP, adapters</text>
+
+  <!-- Contracts -->
+  <rect x="72" y="256" width="220" height="25" fill="#f8fafc" />
+  <text class="cluster-title" x="80" y="272">Base Sepolia contracts</text>
+
+  <rect class="contract" x="90" y="295" width="230" height="58" />
+  <text class="node-title" x="205" y="316">IdentityRegistry</text>
+  <text class="node-sub" x="205" y="340">ERC-8004 agent identity</text>
+
+  <rect class="contract" x="355" y="295" width="230" height="58" />
+  <text class="node-title" x="470" y="316">RepNetFeeRouter</text>
+  <text class="node-sub" x="470" y="340">USDC payments + fee caps</text>
+
+  <rect class="contract" x="620" y="295" width="230" height="58" />
+  <text class="node-title" x="735" y="316">ReputationRegistry</text>
+  <text class="node-sub" x="735" y="340">structured feedback</text>
+
+  <rect class="contract" x="885" y="295" width="230" height="58" />
+  <text class="node-title" x="1000" y="316">RepNetEscrow</text>
+  <text class="node-sub" x="1000" y="340">specs, deadlines, disputes</text>
+
+  <!-- Off-chain services -->
+  <rect x="522" y="450" width="175" height="25" fill="#f8fafc" />
+  <text class="cluster-title" x="530" y="466">Off-chain services</text>
+
+  <rect class="service" x="570" y="520" width="160" height="76" />
+  <text class="node-title" x="650" y="541">Publisher</text>
+  <text class="node-sub" x="650" y="565">DKG receipts</text>
+  <text class="node-sub" x="650" y="585">monitoring</text>
+
+  <rect class="service" x="890" y="500" width="170" height="76" />
+  <text class="node-title" x="975" y="521">Gateway</text>
+  <text class="node-sub" x="975" y="545">private evidence</text>
+  <text class="node-sub" x="975" y="565">batch actions</text>
+
+  <rect class="service" x="870" y="610" width="260" height="64" />
+  <text class="node-title" x="1000" y="630">Dispute resolver</text>
+  <text class="node-sub" x="1000" y="652">LLM judges + on-chain votes</text>
+
+  <!-- Visible escrow/dispute exchange: drawn above boxes because the endpoints sit on box borders. -->
+  <path class="arrow-front" d="M1115 324 C1210 385, 1215 565, 1130 630" />
+  <path class="arrow-front" d="M1130 654 C1280 575, 1260 400, 1115 315" />
+
+  <!-- DKG -->
+  <rect class="dkg" x="680" y="735" width="240" height="60" />
+  <text class="node-title" x="800" y="757">OriginTrail DKG</text>
+  <text class="node-sub" x="800" y="779">agreements, feedback, reasoning</text>
+</svg>

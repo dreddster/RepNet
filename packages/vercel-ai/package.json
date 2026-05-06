@@ -1,0 +1,47 @@
+{
+  "name": "@repnet/vercel-ai",
+  "version": "0.1.1",
+  "description": "RepNet Vercel AI SDK integration — AI agent reputation tools for any Vercel AI-powered app.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "repnet",
+    "vercel-ai",
+    "ai-sdk",
+    "ai-agents",
+    "reputation",
+    "tools",
+    "base"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dreddster/Rep.git",
+    "directory": "packages/vercel-ai"
+  },
+  "homepage": "https://repnet.wittymermaid.com",
+  "author": "RepNet Protocol",
+  "dependencies": {
+    "@repnet/sdk": "^0.1.1",
+    "ai": ">=4.0.0",
+    "ethers": "^6.13.0",
+    "zod": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^4.0.18"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

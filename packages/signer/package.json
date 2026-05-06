@@ -1,0 +1,31 @@
+{
+  "name": "@repnet/signer",
+  "version": "0.1.0",
+  "description": "RepNet Signer Sidecar — lightweight signing proxy that keeps your private key on YOUR infrastructure",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "repnet-signer": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/cli.ts",
+    "build": "tsup src/cli.ts src/index.ts --format esm --dts --clean",
+    "start": "node dist/cli.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["repnet", "signer", "sidecar", "agent", "reputation", "web3"],
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^6.13.0",
+    "fastify": "^5.3.3"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.18",
+    "@types/node": "^22.15.18"
+  }
+}

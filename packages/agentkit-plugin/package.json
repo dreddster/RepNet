@@ -1,0 +1,54 @@
+{
+  "name": "@repnet/agentkit-plugin",
+  "version": "0.1.1",
+  "description": "RepNet Reputation Protocol action provider for Coinbase AgentKit",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "prebuild": "npm run clean && npm run build -w @repnet/sdk --prefix ../..",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "pretest": "npm run build -w @repnet/sdk --prefix ../..",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@repnet/sdk": "^0.1.1",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "vitest": "4.0.18"
+  },
+  "files": [
+    "dist/"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dreddster/Rep.git",
+    "directory": "packages/agentkit-plugin"
+  },
+  "homepage": "https://repnet.wittymermaid.com",
+  "keywords": [
+    "repnet",
+    "coinbase-agentkit",
+    "agentkit",
+    "action-provider",
+    "ai-agents",
+    "reputation",
+    "erc-8004",
+    "base"
+  ],
+  "peerDependenciesMeta": {
+    "@coinbase/agentkit": {
+      "optional": true
+    }
+  },
+  "peerDependencies": {
+    "@coinbase/agentkit": "^0.10.4"
+  }
+}

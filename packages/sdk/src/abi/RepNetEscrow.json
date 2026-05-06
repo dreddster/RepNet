@@ -1,0 +1,2547 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "ActiveDisputes",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      }
+    ],
+    "name": "AddressEmptyCode",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "AlreadyVoted",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DeadlineInPast",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DeadlineNotPassed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DeadlineNotSet",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "DeadlinePassed",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "implementation",
+        "type": "address"
+      }
+    ],
+    "name": "ERC1967InvalidImplementation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ERC1967NonPayable",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EmptyAgreement",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EmptyURI",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EnforcedPause",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "EvidenceLocked",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ExpectedPause",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ExtensionDeadlineNotReached",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "FailedCall",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "FailedDeployment",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "FeeAboveMaximum",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "FeeBelowMinimum",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "needed",
+        "type": "uint256"
+      }
+    ],
+    "name": "InsufficientBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidInitialization",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidVote",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidVoteCount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MaxExceeds50Percent",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MinExceedsMax",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoPendingProposal",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoSpecs",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoUnrespondedFails",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotAuthorizedJudge",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotContractor",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotInitializing",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotParty",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotRegistered",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotWorker",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableInvalidOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PenaltyExceeds100",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReentrancyGuardReentrantCall",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ResultsLengthMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReviewPeriodExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReviewPeriodNotExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReviewPeriodTooLong",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SelfEscrow",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SpecIndexOutOfRange",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TimelockNotExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TooManySpecs",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UUPSUnauthorizedCallContext",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "slot",
+        "type": "bytes32"
+      }
+    ],
+    "name": "UUPSUnsupportedProxiableUUID",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "WeightsMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "WrongSpecState",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "WrongState",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroReviewPeriod",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroWeight",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "workerAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "contractorRefund",
+        "type": "uint256"
+      }
+    ],
+    "name": "AgreedPortionSettled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "AutoApproved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "party",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "CollateralDeposited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "loser",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "winner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "CollateralForfeited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "party",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "CollateralReturned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "worker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "workerEvidenceURI",
+        "type": "string"
+      }
+    ],
+    "name": "ContestFiled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "DisputeFeeBoundsProposalCancelled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newMin",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newMax",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "executeAfter",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputeFeeBoundsProposed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newMin",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newMax",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputeFeeBoundsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "DisputeFeeProposalCancelled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newFeeBps",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "executeAfter",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputeFeeProposed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldFeeBps",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newFeeBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputeFeeUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountReleased",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountRefunded",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "disputeFees",
+        "type": "uint256"
+      }
+    ],
+    "name": "EscrowCompleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "contractor",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "worker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "agreementHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "specCount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "deliveryDeadline",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reviewPeriod",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "collateralBps",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "collateralPenaltyBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "EscrowCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "EscrowRefunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "party",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "evidenceURI",
+        "type": "string"
+      }
+    ],
+    "name": "EvidenceSubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExtensionApproved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExtensionDenied",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newDeadline",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExtensionRequested",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "version",
+        "type": "uint64"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "worker",
+        "type": "address"
+      }
+    ],
+    "name": "JobAccepted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "judge",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "authorized",
+        "type": "bool"
+      }
+    ],
+    "name": "JudgeUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "judge",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum RepNetEscrow.Verdict",
+        "name": "vote",
+        "type": "uint8"
+      }
+    ],
+    "name": "JudgeVoted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Paused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldVotes",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newVotes",
+        "type": "uint256"
+      }
+    ],
+    "name": "RequiredVotesUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum RepNetEscrow.SpecStatus",
+        "name": "response",
+        "type": "uint8"
+      }
+    ],
+    "name": "SpecResponded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "contractor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool[]",
+        "name": "results",
+        "type": "bool[]"
+      }
+    ],
+    "name": "SpecsReviewed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "implementation",
+        "type": "address"
+      }
+    ],
+    "name": "Upgraded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      }
+    ],
+    "name": "VaultCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum RepNetEscrow.Verdict",
+        "name": "verdict",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "specMetVotes",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "specNotMetVotes",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "disputeFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "winnerAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "VerdictReached",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "deliveryURI",
+        "type": "string"
+      }
+    ],
+    "name": "WorkDelivered",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "FEE_TIMELOCK",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "REPNET_VERSION",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "UPGRADE_INTERFACE_VERSION",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "acceptFail",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "acceptJob",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "activeDisputeCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "approveExtension",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "authorizedJudges",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cancelDisputeFeeBoundsProposal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cancelDisputeFeeProposal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum RepNetEscrow.Verdict",
+        "name": "_vote",
+        "type": "uint8"
+      }
+    ],
+    "name": "castVote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimAutoApprove",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimExtraWorkTimeout",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimRefund",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimUnrespondedFails",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "evidenceURI",
+        "type": "string"
+      }
+    ],
+    "name": "contestSpec",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "worker",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "agreementHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "specWeights",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "deliveryDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reviewPeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "collateralBps",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "collateralPenaltyBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "createEscrow",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_deliveryURI",
+        "type": "string"
+      }
+    ],
+    "name": "deliverWork",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "deliveryURIs",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "denyExtension",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "disputeFeeBps",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "executeDisputeFeeBounds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "executeDisputeFeeBps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "feeRouter",
+    "outputs": [
+      {
+        "internalType": "contract RepNetFeeRouter",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAllSpecs",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint16",
+            "name": "weight",
+            "type": "uint16"
+          },
+          {
+            "internalType": "enum RepNetEscrow.SpecStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum RepNetEscrow.Verdict",
+            "name": "verdict",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint16",
+            "name": "disputeFeeBps",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint48",
+            "name": "extensionDeadline",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint48",
+            "name": "extraWorkResponseDeadline",
+            "type": "uint48"
+          },
+          {
+            "internalType": "string",
+            "name": "contractorEvidenceURI",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "workerEvidenceURI",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct RepNetEscrow.SpecItem[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCollateralInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getJob",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "contractor",
+            "type": "address"
+          },
+          {
+            "internalType": "uint8",
+            "name": "specCount",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum RepNetEscrow.JobStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint16",
+            "name": "collateralBps",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint16",
+            "name": "collateralPenaltyBps",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint32",
+            "name": "reviewPeriod",
+            "type": "uint32"
+          },
+          {
+            "internalType": "address",
+            "name": "worker",
+            "type": "address"
+          },
+          {
+            "internalType": "uint48",
+            "name": "createdAt",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint48",
+            "name": "completedAt",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint48",
+            "name": "deliveryDeadline",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint48",
+            "name": "reviewDeadline",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint48",
+            "name": "workerResponseDeadline",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "agreementHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountSettled",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountReleased",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountRefunded",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "disputeFeesCollected",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "escrowFeePaid",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contractorCollateral",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "workerCollateral",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "collateralSettled",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "workerAmountSettled",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contractorAmountSettled",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct RepNetEscrow.EscrowJob",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSpec",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint16",
+            "name": "weight",
+            "type": "uint16"
+          },
+          {
+            "internalType": "enum RepNetEscrow.SpecStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum RepNetEscrow.Verdict",
+            "name": "verdict",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint16",
+            "name": "disputeFeeBps",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint48",
+            "name": "extensionDeadline",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint48",
+            "name": "extraWorkResponseDeadline",
+            "type": "uint48"
+          },
+          {
+            "internalType": "string",
+            "name": "contractorEvidenceURI",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "workerEvidenceURI",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct RepNetEscrow.SpecItem",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getVaultInfo",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "vaultBalance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "getVoteTally",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "specMetVotes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specNotMetVotes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "voters",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "identityRegistry",
+    "outputs": [
+      {
+        "internalType": "contract IdentityRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_usdc",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_identityRegistry",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_feeRouter",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vaultImplementation",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_disputeFeeBps",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minDisputeFeeBps",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxDisputeFeeBps",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_requiredVotes",
+        "type": "uint256"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "jobVaults",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "jobs",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "contractor",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "specCount",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum RepNetEscrow.JobStatus",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint16",
+        "name": "collateralBps",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "collateralPenaltyBps",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint32",
+        "name": "reviewPeriod",
+        "type": "uint32"
+      },
+      {
+        "internalType": "address",
+        "name": "worker",
+        "type": "address"
+      },
+      {
+        "internalType": "uint48",
+        "name": "createdAt",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "completedAt",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "deliveryDeadline",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "reviewDeadline",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "workerResponseDeadline",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "agreementHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountSettled",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountReleased",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountRefunded",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "disputeFeesCollected",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "escrowFeePaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "contractorCollateral",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "workerCollateral",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "collateralSettled",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "workerAmountSettled",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "contractorAmountSettled",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "judgeVotes",
+    "outputs": [
+      {
+        "internalType": "enum RepNetEscrow.Verdict",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxDisputeFeeBps",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minDisputeFeeBps",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nextJobId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingDisputeFeeBoundsTimestamp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingDisputeFeeBps",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingDisputeFeeTimestamp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingMaxDisputeFeeBps",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingMinDisputeFeeBps",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_min",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_max",
+        "type": "uint256"
+      }
+    ],
+    "name": "proposeDisputeFeeBounds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newFeeBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "proposeDisputeFeeBps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "proxiableUUID",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newDeadline",
+        "type": "uint256"
+      }
+    ],
+    "name": "requestExtraWork",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "requiredVotes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "passed",
+        "type": "bool"
+      }
+    ],
+    "name": "reviewExtendedSpec",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "results",
+        "type": "bool[]"
+      }
+    ],
+    "name": "reviewSpecs",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_min",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_max",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDisputeFeeBounds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "newFeeBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDisputeFeeBps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "judge",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "authorized",
+        "type": "bool"
+      }
+    ],
+    "name": "setJudge",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_requiredVotes",
+        "type": "uint256"
+      }
+    ],
+    "name": "setRequiredVotes",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "specs",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "weight",
+        "type": "uint16"
+      },
+      {
+        "internalType": "enum RepNetEscrow.SpecStatus",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum RepNetEscrow.Verdict",
+        "name": "verdict",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint16",
+        "name": "disputeFeeBps",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint48",
+        "name": "extensionDeadline",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "extraWorkResponseDeadline",
+        "type": "uint48"
+      },
+      {
+        "internalType": "string",
+        "name": "contractorEvidenceURI",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "workerEvidenceURI",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "specIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "evidenceURI",
+        "type": "string"
+      }
+    ],
+    "name": "submitEvidence",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "upgradeToAndCall",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "usdc",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vaultImplementation",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

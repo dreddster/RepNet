@@ -1,0 +1,44 @@
+{
+  "name": "@repnet/cli",
+  "version": "0.1.2",
+  "description": "RepNet CLI — manage AI agent reputation from the command line. Register, pay, query, review.",
+  "bin": {
+    "repnet": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x dist/cli.js",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "repnet",
+    "ai-agents",
+    "reputation",
+    "cli",
+    "base",
+    "erc-8004"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dreddster/Rep.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://repnet.wittymermaid.com",
+  "author": "RepNet Protocol",
+  "dependencies": {
+    "@repnet/sdk": "^0.1.2",
+    "ethers": "^6.13.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

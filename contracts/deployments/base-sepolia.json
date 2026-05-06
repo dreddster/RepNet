@@ -1,0 +1,31 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "version": "v10",
+  "deployer": "0x47B0dCbaF966c14Fc07eAAd5337a6674AEF30120",
+  "treasury": "0x0010752F36c7c91379e76c7580B8f003F9D62025",
+  "dkgPublisher": "0x0010752F36c7c91379e76c7580B8f003F9D62025",
+  "admin": "0x47B0dCbaF966c14Fc07eAAd5337a6674AEF30120",
+  "ownershipTransferred": false,
+  "contracts": {
+    "MockUSDC": "0x1644d762753431a04d1D8a92F581398961b58C97",
+    "USDC": "0x1644d762753431a04d1D8a92F581398961b58C97",
+    "IdentityRegistry": "0xB6f13878a4d8063bc84d26CdDBaDa3C7BaBC628F",
+    "ReputationRegistry": "0xd816c3920a6f55da131A609D63C0dEA0359cFec4",
+    "RepNetFeeRouter": "0xA347B67e0592886Cc42dD095D7E9C1629d7c892a",
+    "EscrowVault": "0xBd568ea3ec6564e18d3119591237810A1d86c89b",
+    "RepNetDKGAnchors": "0xDc4CFC6f397C8384f7c912adF4CE810171F8af69",
+    "RepNetEscrow": {
+      "proxy": "0xb8F6Ef08e856fB57616d2D4878ca43897B89CE08",
+      "implementation": "0x2c7A14b91836B0209f19DaDD000222701460feD6"
+    }
+  },
+  "judges": [
+    "0xA9f16F52d3c33bA69dfD5d51E3db608fD2Ba3474",
+    "0xAc7E28097d3255724252B55331c7B0D24014a6f0",
+    "0x185f34DF332310ae8E98f579a694AD3dF34E1CE0"
+  ],
+  "notes": "Deployment completed on Base Sepolia; public RPC 502 interrupted the original script during judge authorization, then config was resumed idempotently and this manifest was written from the recovered deployed addresses.",
+  "resumedAt": "2026-04-30T16:35:55.669Z",
+  "manifestCreatedAt": "2026-04-30T16:43:13Z"
+}

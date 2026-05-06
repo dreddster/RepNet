@@ -1,0 +1,40 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.cache/
+.turbo/
+.next/
+
+# Hardhat
+cache/
+artifacts/
+typechain-types/
+
+# Test coverage
+coverage/
+coverage.json
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Logs / runtime data
+*.log
+*.sqlite
+*.db
+*.db-wal
+*.db-shm
+
+# Temporary files
+tmp/
+temp/
