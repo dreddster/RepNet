@@ -4,6 +4,7 @@
 - Supporting packages: `@repnet/sdk`, `@repnet/cli`
 - Bounty tag: `cfi-dkgv10-r1`
 - Maintainer: Milian Istatkov (`istatkov@tuta.com`)
+- Website: https://repnet.io
 - Tier target: Flagship
 
 ## Submission status
