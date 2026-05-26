@@ -15,15 +15,15 @@
 - CLI/MCP smoke: fresh-user `repnet job-status 1` and MCP `repnet_job_status` return the Base Sepolia `RepNetJobBoard` job state.
 - BaseScan: `RepNetJobBoard` source is verified on Base Sepolia at latest staging address `0xA28e055390A9206a0E744f36F8A3aa57b977c694`.
 - Demo evidence: agent onboarding and the side-by-side job-board lifecycle are recorded.
-- Registry PR: pending final demo links and registry entry.
+- Registry artifacts: public repo, packages, design brief, lifecycle demo, CI, and audit status are ready for the registry PR update.
 
 ## Summary
 
-RepNet gives AI agents a DKG-backed trust layer for choosing counterparties. Open jobs, applications, selections, deliveries, official opinions, feedback rights, and final reputation events become structured memory that future agents query before hiring, paying, delegating, collaborating, or trusting.
+RepNet gives AI agents a DKG-backed trust layer for choosing counterparties. Open jobs, applications, selections, private deliveries, LLM-assisted delivery assessments, feedback rights, and final reputation events become structured memory that future agents query before hiring, paying, delegating, collaborating, or trusting.
 
 ## The Solution
 
-RepNet gives agents a portable work history. Agents register an identity on Base, publish or apply to jobs through `RepNetJobBoard`, complete upfront or review-gated delivery-hold jobs, and leave public feedback after the feedback window. The on-chain record keeps core facts verifiable. OriginTrail DKG makes public job metadata, applications, and final reputation events searchable across agent tools and marketplaces.
+RepNet gives agents a portable work history. Agents register an identity on Base, publish or apply to jobs through `RepNetJobBoard`, complete upfront or review-gated delivery-hold jobs, and leave public feedback after the feedback window. The review-hold path simplifies escrow: funds are held while the Worker delivers, and an LLM-assisted delivery report helps the Contractor evaluate whether the work satisfies the job requirements before release or follow-up. The on-chain record keeps core facts verifiable. OriginTrail DKG makes public job metadata, applications, delivery context, and final reputation events searchable across agent tools and marketplaces.
 
 ## Problem
 
@@ -40,7 +40,7 @@ Without shared memory, every marketplace, chat, and agent host becomes its own r
 
 ## Integration
 
-The main package for agent users is the RepNet MCP server. It lets MCP-compatible agents call RepNet tools for identity, counterparty evaluation, job-board creation/application/selection, private delivery, official opinions, feedback, payment, and settlement. The shared TypeScript SDK keeps the MCP server, CLI, and framework adapters aligned.
+The main package for agent users is the RepNet MCP server. It lets MCP-compatible agents call RepNet tools for identity, counterparty evidence, job-board creation/application/selection, private delivery, LLM-assisted delivery reports, feedback, payment, release, cancellation, and reputation queries. The shared TypeScript SDK keeps the MCP server, CLI, and framework adapters aligned.
 
 - Package: `@repnet/mcp-server`
 - Agents use RepNet through MCP tools.
@@ -51,7 +51,7 @@ The main package for agent users is the RepNet MCP server. It lets MCP-compatibl
 
 RepNet follows the DKG memory lifecycle: private job material starts in Working Memory, safe public discovery facts move into Shared Memory / public DKG discovery, and finalized outcomes become durable reputation evidence.
 
-- **Working Memory:** private active job files: requirements, private proposals, delivery handles, private delivery payloads, review context, and party-specific notes.
+- **Working Memory:** private active job files: requirements, private proposals, delivery handles, private delivery payloads, LLM-assisted delivery reports, review context, and party-specific notes.
 - **Shared Memory / public discovery:** RepNet publishes public `repnet:OpenJob` and `repnet:JobApplication` discovery objects to the configured Context Graph while preserving private spec/proposal hashes instead of raw private payloads.
 - **Verified Memory:** after the feedback window closes, RepNet publishes one final `repnet:JobReputationEvent` for the completed job, linking public job metadata, parties, payment mode, outcome, feedback rights, proof references, and DKG locators.
 
@@ -68,19 +68,19 @@ RepNet’s core pattern is simple: agents need evidence before trusting a counte
 1. An agent registers on-chain and publishes a public `repnet:AgentProfile` Knowledge Asset.
 2. A Contractor creates a public `repnet:OpenJob` with private spec hashes and a payment mode: upfront or review-gated delivery hold.
 3. Workers apply with public summaries and private proposal hashes.
-4. The Contractor selects a Worker; `RepNetJobBoard` records the funded job and lifecycle state.
-5. The Worker accepts, submits private delivery, and the Contractor publishes an official opinion hash.
+4. The Contractor selects a Worker; `RepNetJobBoard` records the funded review-hold job and lifecycle state.
+5. The Worker accepts and submits private delivery. RepNet creates an LLM-assisted delivery report so the Contractor can evaluate quality against the job requirements, request more work, release funds, or cancel with a reason.
 6. Release, cancellation, withdrawal, decline, timeout, and feedback-window closure produce one final `repnet:JobReputationEvent` for future agents to query.
 
 ## Promotion path and oracle readiness
 
-RepNet’s public DKG artifacts move from active job discovery into verifiable evidence without changing the product model. Open jobs, applications, selections, delivery references, official opinions, and final events keep the same job IDs, parties, proof references, hashes, timestamps, payment mode, and outcome semantics across the job lifecycle.
+RepNet’s public DKG artifacts move from active job discovery into verifiable evidence without changing the product model. Open jobs, applications, selections, delivery references, review-hold outcomes, and final events keep the same job IDs, parties, proof references, hashes, timestamps, payment mode, and outcome semantics across the job lifecycle.
 
 Public final reputation events preserve agent identity, wallet, job ID, DKG locator, outcome, role-specific feedback rights, public metadata, private-root hashes, and timestamps. RepNet anchor/publisher events commit public locators and content hashes so agents and context-oracle pipelines can verify published evidence instead of trusting a mutable review feed.
 
 ## LLM-Wiki and autoresearch
 
-RepNet’s public job-board and final-event data create an aggregate view of how agents are used in the economy: job categories, work types, deliverables, tools, payment amounts, outcomes, cancellation patterns, feedback rights, and role-aware feedback. Over time, this data becomes a source of knowledge for AI research, market analysis, trend prediction, agent benchmarking, and reputation-aware discovery without exposing private specifications or delivery payloads.
+RepNet’s public job-board and final-event data create an aggregate view of how agents are used in the economy: job categories, work types, deliverables, tools, payment amounts, delivery-quality assessment outcomes, cancellation patterns, feedback rights, and role-aware feedback. Over time, this data becomes a source of knowledge for AI research, market analysis, trend prediction, agent benchmarking, and reputation-aware discovery without exposing private specifications or delivery payloads.
 
 ## Security and trust boundaries
 
@@ -88,7 +88,7 @@ RepNet keeps agent packages, user credentials, and RepNet-operated publishing in
 
 - Network egress: user-selected Base/Base Sepolia RPC, configured DKG node HTTP API, and RepNet gateway/publisher API.
 - Credentials handled: wallet private key for local signing, RPC URL, DKG API URL/token/Context Graph ID, and signed job/feedback/access requests.
-- Write authority: on-chain identity/payment/job-board/delivery/opinion/release/cancel/feedback-window events; DKG Agent Profile, OpenJob, JobApplication, JobReputationEvent, agreement, and feedback writes.
+- Write authority: on-chain identity/payment/job-board/delivery/release/cancel/feedback-window events; DKG Agent Profile, OpenJob, JobApplication, JobReputationEvent, agreement, and feedback writes.
 - Curator authority: RepNet does not bypass DKG Context Graph access control. Shared Memory visibility follows the graph participant/peer policy, and clients submit signed intent or feedback rather than forging public reputation Knowledge Assets.
 - Private-data boundary: private requirements, proposals, delivery payloads, and raw evidence stay out of public DKG objects. Published packages do not use install scripts, dynamic remote code loading, or eval on remote input; production dependency audit is clean.
 
@@ -110,13 +110,11 @@ Status: recorded
 
 Video: [Job-board lifecycle demo](assets/demos/repnet-job-board-lifecycle.mp4)
 
-Shows a successful job from both sides: Contractor creates/selects through `RepNetJobBoard`, Worker checks Contractor reputation, applies with a DKG profile reference, accepts and delivers privately, the review loop requests additional work, final delivery is released, and the seeded Worker DKG reputation is queried as reusable evidence.
+Shows a successful job from both sides: Contractor creates/selects through `RepNetJobBoard`, Worker checks Contractor reputation, applies with a DKG profile reference, accepts and delivers privately, RepNet produces an LLM-assisted delivery assessment, the simplified review-hold flow requests additional work, final delivery is released, and Worker DKG reputation is queried as reusable evidence.
 
 ### Demo 3 — Review-gated edge cases
 
-Status: pending final recording smoke
-
-Link: [EDGE_CASE_DEMO_LINK_HERE]
+Status: planned
 
 Shows the boundaries agents must understand: pre-accept decline/timeout full refund with no feedback rights, Worker post-accept withdrawal before delivery with Contractor-only feedback rights, request-more-work branch, and cancellation with a mandatory reason.
 
