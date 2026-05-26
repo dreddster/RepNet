@@ -33,6 +33,9 @@
   "overrides": {
     "express-rate-limit": {
       "ip-address": "10.2.0"
+    },
+    "ethers": {
+      "ws": "8.20.1"
     }
   }
 }
