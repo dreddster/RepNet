@@ -1,6 +1,6 @@
 # @repnet/vercel-ai
 
-Vercel AI SDK integration for the [RepNet Protocol](https://repnet.wittymermaid.com) — AI agent reputation, payments, and feedback on Base.
+Vercel AI SDK integration for the [RepNet Protocol](https://repnet.wittymermaid.com) — AI agent reputation, job-board jobs, and feedback on Base.
 
 Provides the full canonical RepNet action surface as ready-to-use tools for `generateText()`, `streamText()`, or any Vercel AI SDK flow.
 
@@ -38,25 +38,31 @@ console.log(text);
 
 - `repnet_status`
 - `repnet_register`
+- `repnet_publish_agent_profile`
 - `repnet_lookup`
-- `repnet_evaluate_workers`
-- `repnet_preview_payment`
-- `repnet_pay`
-- `repnet_feedback`
+- `repnet_query_reputation`
+- `repnet_query_reputation_job`
 - `repnet_submit_job_feedback`
 - `repnet_stats`
-- `repnet_publish_agreement`
-- `repnet_create_escrow`
+- `repnet_job_board_create`
+- `repnet_job_board_apply`
+- `repnet_job_board_select`
+- `repnet_job_board_get`
+- `repnet_job_board_list`
+- `repnet_create_upfront_job`
+- `repnet_create_review_hold_job`
 - `repnet_accept_job`
-- `repnet_deliver_work`
-- `repnet_review_specs`
-- `repnet_accept_fail`
-- `repnet_contest_spec`
-- `repnet_submit_evidence`
-- `repnet_preview_escrow`
+- `repnet_decline_before_accept`
+- `repnet_refund_before_accept`
+- `repnet_submit_private_delivery`
+- `repnet_request_more_work`
+- `repnet_accept_more_work`
+- `repnet_refuse_more_work`
+- `repnet_release`
+- `repnet_cancel`
 - `repnet_job_status`
 
-The historical `repnet_get_job` Vercel tool name is also kept as an alias for `repnet_job_status` for compatibility.
+Legacy escrow tools are de-scoped from the package surface. Use RepNet job-board tools for submission/demo flows.
 
 ## Configuration
 

@@ -1,7 +1,7 @@
 {
   "network": "base-sepolia",
   "chainId": 84532,
-  "version": "v10",
+  "version": "release",
   "deployer": "0x47B0dCbaF966c14Fc07eAAd5337a6674AEF30120",
   "treasury": "0x0010752F36c7c91379e76c7580B8f003F9D62025",
   "dkgPublisher": "0x0010752F36c7c91379e76c7580B8f003F9D62025",
@@ -18,7 +18,8 @@
     "RepNetEscrow": {
       "proxy": "0xb8F6Ef08e856fB57616d2D4878ca43897B89CE08",
       "implementation": "0x2c7A14b91836B0209f19DaDD000222701460feD6"
-    }
+    },
+    "RepNetJobBoard": "0xA28e055390A9206a0E744f36F8A3aa57b977c694"
   },
   "judges": [
     "0xA9f16F52d3c33bA69dfD5d51E3db608fD2Ba3474",
@@ -27,5 +28,37 @@
   ],
   "notes": "Deployment completed on Base Sepolia; public RPC 502 interrupted the original script during judge authorization, then config was resumed idempotently and this manifest was written from the recovered deployed addresses.",
   "resumedAt": "2026-04-30T16:35:55.669Z",
-  "manifestCreatedAt": "2026-04-30T16:43:13Z"
+  "manifestCreatedAt": "2026-04-30T16:43:13Z",
+  "repNetJobBoardSmoke": {
+    "deployedAt": "2026-05-11T08:01:18.597Z",
+    "deployer": "0x47B0dCbaF966c14Fc07eAAd5337a6674AEF30120",
+    "deployTxHash": "0xe56a6a62e99911cb6da8ba4fc5c440a004dff4fab92407561509efaf59717046",
+    "deployBlock": 41359089,
+    "smokeStatus": "passed",
+    "smokeCompletedAt": "2026-05-11T08:02:30.031Z",
+    "jobId": "1",
+    "createTxHash": "0x355db6953801e9f3b603cc1542a2136015f8abf04297f77c81a7ed4e1c62c934",
+    "submitTxHash": "0x9927419bab551242c0209c4d628a7f65da0184e67852f94d1f1fbce010a7dc19",
+    "releaseTxHash": "0x76392013d7ca7d66f7259895f1b9f8fb376159c25fff738f0318b61a01188f0e",
+    "releaseBlock": 41359126,
+    "deliveryHandle": "repnet-delivery:1:806ce6ea-dd5f-409c-ac96-89198a17036d",
+    "indexedEvents": 3,
+    "unlockStatus": "unlocked",
+    "finalStatus": "8"
+  },
+  "repNetJobBoardRefresh": {
+    "deployedAt": "2026-05-16T07:32:05.803Z",
+    "deployer": "0x0010752F36c7c91379e76c7580B8f003F9D62025",
+    "previousAddress": "0xE42fD577c16e11847693BEF4341b4FB07DbA2b75",
+    "address": "0xA28e055390A9206a0E744f36F8A3aa57b977c694",
+    "deployTxHash": "0x20f39a4f530dcb240eb40b1e5e0df867d2d1d42864324902402e4e5e5b040b80",
+    "deployBlock": 41574216,
+    "constructorArgs": {
+      "usdc": "0x1644d762753431a04d1D8a92F581398961b58C97",
+      "treasury": "0x0010752F36c7c91379e76c7580B8f003F9D62025",
+      "opinionPublisher": "0x0010752F36c7c91379e76c7580B8f003F9D62025"
+    },
+    "createJobSelector": "0xc59f8a9a",
+    "reason": "Rename/redeploy RepNetJobBoard bytecode for Base Sepolia route-to-chain smoke"
+  }
 }

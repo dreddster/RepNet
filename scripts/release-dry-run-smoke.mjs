@@ -14,6 +14,7 @@ const publishable = [
   "@repnet/mcp-server",
   "@repnet/vercel-ai",
   "@repnet/cli",
+  "@repnet/signer",
   "@repnet/agentkit-plugin",
   "@repnet/plugin-eliza",
 ];
@@ -69,15 +70,20 @@ try {
   `;
   run("node", ["--input-type=module", "-e", importScript], { cwd: appDir, stdio: "inherit" });
 
-  log("verify CLI and MCP bins");
+  log("verify CLI, signer, and MCP bins");
   const repnetBin = join(appDir, "node_modules/.bin/repnet");
+  const signerBin = join(appDir, "node_modules/.bin/repnet-signer");
   const mcpBin = join(appDir, "node_modules/.bin/repnet-mcp");
-  for (const bin of [repnetBin, mcpBin]) {
+  for (const bin of [repnetBin, signerBin, mcpBin]) {
     assert((statSync(bin).mode & 0o111) !== 0, `${basename(bin)} is not executable`);
   }
   const help = run(repnetBin, ["help"], { cwd: appDir });
   assert(help.includes("RepNet CLI"), "repnet help did not print CLI help");
   console.log(help.split(/\r?\n/).slice(0, 12).join("\n"));
+  const signerHelp = run(signerBin, ["--help"], { cwd: appDir });
+  assert(signerHelp.includes("@repnet/signer"), "repnet-signer --help did not print signer help");
+  assert(signerHelp.includes("--allowed-contracts"), "repnet-signer help omitted contract allowlist option");
+  console.log(signerHelp.split(/\r?\n/).slice(0, 12).join("\n"));
 
   const mcp = spawnSync(mcpBin, [], {
     cwd: appDir,

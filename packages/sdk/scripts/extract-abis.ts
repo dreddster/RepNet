@@ -5,6 +5,10 @@
  */
 import * as fs from "fs";
 import * as path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ARTIFACTS_DIR = path.join(__dirname, "../../../contracts/artifacts/contracts");
 const DEPLOYMENT_FILE = path.join(__dirname, "../../../contracts/deployments/base-sepolia.json");
@@ -16,8 +20,7 @@ const CONTRACTS = [
   "IdentityRegistry",
   "ReputationRegistry",
   "RepNetFeeRouter",
-  "EscrowVault",
-  "RepNetEscrow",
+  "RepNetJobBoard",
 ];
 
 // Extract ABIs
@@ -36,7 +39,8 @@ console.log(`✅ ABIs extracted to ${ABI_OUT}`);
 // Update addresses
 const deployment = JSON.parse(fs.readFileSync(DEPLOYMENT_FILE, "utf-8"));
 const addrs = deployment.contracts;
-const escrowAddress = typeof addrs.RepNetEscrow === "string" ? addrs.RepNetEscrow : addrs.RepNetEscrow.proxy;
+const jobBoardAddress = addrs.RepNetJobBoard || addrs.RepNetJobs;
+if (!jobBoardAddress) throw new Error("Deployment missing RepNetJobBoard address");
 const deployedLabel = deployment.deployedAt || deployment.manifestCreatedAt || deployment.resumedAt || "unknown";
 
 const addrCode = `export interface DeploymentAddresses {
@@ -44,8 +48,7 @@ const addrCode = `export interface DeploymentAddresses {
   IdentityRegistry: string;
   ReputationRegistry: string;
   RepNetFeeRouter: string;
-  EscrowVault: string;
-  RepNetEscrow: string;
+  RepNetJobBoard: string;
 }
 
 export const ADDRESSES: Record<number, DeploymentAddresses> = {
@@ -55,8 +58,7 @@ export const ADDRESSES: Record<number, DeploymentAddresses> = {
     IdentityRegistry: "${addrs.IdentityRegistry}",
     ReputationRegistry: "${addrs.ReputationRegistry}",
     RepNetFeeRouter: "${addrs.RepNetFeeRouter}",
-    EscrowVault: "${addrs.EscrowVault}",
-    RepNetEscrow: "${escrowAddress}",
+    RepNetJobBoard: "${jobBoardAddress}",
   },
   // Base Mainnet (future)
   // 8453: { ... }

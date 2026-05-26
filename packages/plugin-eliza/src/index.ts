@@ -59,7 +59,7 @@ type InputResolver = (
 export type RepNetElizaOptions = {
   /** Prebuilt RepNet SDK client. Useful for tests and agents that own wallet setup externally. */
   client?: RepNetActionClient;
-  /** Lazily creates the RepNet SDK client for the current Eliza runtime. */
+  /** Lazily creates the RepNet SDK client for the Eliza runtime. */
   createClient?: (runtime: IAgentRuntime) => RepNetActionClient;
   /** Optional structured input resolver for mapping Eliza messages to canonical action inputs. */
   getInput?: InputResolver;

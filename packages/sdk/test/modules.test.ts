@@ -1,14 +1,14 @@
 /**
  * SDK Module Tests — runs against Base Sepolia testnet.
  *
- * Tests the SDK modules end-to-end against deployed v2 contracts.
+ * Tests the SDK modules end-to-end against deployed contracts.
  * Uses fresh random wallets funded from the deployer wallet.
  */
 import { describe, it, expect, beforeAll } from "vitest";
 import { ethers } from "ethers";
 import * as fs from "fs";
 import * as path from "path";
-import { RepNet, parseUSDC, formatUSDC, JobStatus } from "../src/index";
+import { RepNet, parseUSDC, formatUSDC } from "../src/index";
 
 const RPC_URL = "https://sepolia.base.org";
 const CHAIN_ID = 84532;
@@ -151,52 +151,6 @@ describeWithDeployer("SDK Modules (Base Sepolia)", () => {
       const stats = await contractorAirep.payment.getProtocolStats();
       expect(stats.totalJobs).toBeGreaterThanOrEqual(0n); // >= 0, depends on test order
     });
-  });
-
-  // ═══════════════════════════════════════════════════
-  //  Escrow Module
-  // ═══════════════════════════════════════════════════
-
-  describe("EscrowModule", () => {
-    let escrowJobId: bigint;
-
-    it("should create escrow", async () => {
-      // Settle after payment tests
-      await new Promise((r) => setTimeout(r, 5000));
-      const deadline = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60;
-      const result = await contractorAirep.escrow.create(
-        workerWallet.address,
-        parseUSDC(200),
-        deadline,
-        3
-      );
-      escrowJobId = result.jobId;
-      expect(escrowJobId).toBeGreaterThan(0n);
-    }, 45000);
-
-    it("should get job details", async () => {
-      await new Promise((r) => setTimeout(r, 3000));
-      const job = await contractorAirep.escrow.getJob(escrowJobId);
-      expect(job.status).toBe(JobStatus.Active);
-      expect(job.totalAmount).toBe(parseUSDC(200));
-      expect(job.specCount).toBe(3n);
-    });
-
-    it("should deliver work", async () => {
-      await workerAirep.escrow.deliverWork(escrowJobId, "ipfs://test-delivery-e2e");
-      await new Promise((r) => setTimeout(r, 3000));
-      const job = await contractorAirep.escrow.getJob(escrowJobId);
-      expect(job.status).toBe(JobStatus.Delivered);
-    }, 30000);
-
-    it("should review specs and auto-settle when all pass", async () => {
-      // Review all specs as passed → auto-settles to worker
-      await contractorAirep.escrow.reviewSpecs(escrowJobId, [true, true, true]);
-      await new Promise((r) => setTimeout(r, 3000));
-
-      const job = await contractorAirep.escrow.getJob(escrowJobId);
-      expect(job.status).toBe(JobStatus.Completed);
-    }, 60000);
   });
 
   // ═══════════════════════════════════════════════════

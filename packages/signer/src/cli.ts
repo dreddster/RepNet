@@ -20,7 +20,7 @@ function usage(): never {
     --host, -h         Host to bind to (default: 127.0.0.1)
     --gateway, -g      Gateway URL to register with (optional)
     --allowed-ops      Comma-separated list of allowed operations
-                       (e.g. register,feedback,escrow.create)
+                       (e.g. register,feedback,escrow.create,job.post,delivery.submit)
     --chain-id         Expected chain ID; rejects challenges for any other chain
     --allowed-contracts Comma-separated transaction target contract allowlist
     --allow-native-value Allow non-zero native token value in signed transactions

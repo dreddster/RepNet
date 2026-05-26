@@ -1,6 +1,6 @@
 {
   "name": "@repnet/agentkit-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "RepNet Reputation Protocol action provider for Coinbase AgentKit",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@repnet/sdk": "^0.1.1",
+    "@repnet/sdk": "^0.1.7",
     "zod": "^3.22.0"
   },
   "devDependencies": {

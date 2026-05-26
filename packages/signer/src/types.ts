@@ -6,7 +6,7 @@ export interface SigningChallenge {
   /** Unique challenge ID (for idempotency / tracking) */
   challengeId: string;
   /** The operation being requested */
-  operation: 'register' | 'feedback' | 'escrow.create' | 'escrow.complete' | 'escrow.contest' | 'escrow.release' | 'raw';
+  operation: 'register' | 'feedback' | 'escrow.create' | 'escrow.complete' | 'escrow.contest' | 'escrow.release' | 'delivery.submit' | 'job.post' | 'job.create.review_hold' | 'job.create.upfront' | 'raw';
   /** Human-readable description of what's being signed */
   description: string;
   /** The raw bytes to sign (hex-encoded, 0x-prefixed) */

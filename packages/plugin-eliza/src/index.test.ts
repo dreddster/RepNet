@@ -66,28 +66,21 @@ describe("RepNet ElizaOS plugin", () => {
   });
 
   it("delegates invocation to the canonical action registry", async () => {
-    const calls: Array<{ worker: string; amount: bigint }> = [];
     const client = createShapeOnlyClient();
-    client.payment.pay = async (worker: string, amount: bigint) => {
-      calls.push({ worker, amount });
-      return { hash: "0xpaid" };
-    };
-
-    const [pay] = createRepNetElizaActions({
+    const [status] = createRepNetElizaActions({
       client,
-      getInput: async (actionName) => actionName === "repnet_pay" ? { worker: "0xworker", amount: 12.5 } : {},
-    }).filter((action) => action.name === "repnet_pay");
+      getInput: async () => ({}),
+    }).filter((action) => action.name === "repnet_status");
 
     const callbackMessages: unknown[] = [];
-    const result = await pay.handler({} as any, { content: { text: "pay worker" } } as any, undefined, undefined, async (content) => {
+    const result = await status.handler({} as any, { content: { text: "status" } } as any, undefined, undefined, async (content) => {
       callbackMessages.push(content);
       return [] as any;
     });
 
     expect(result?.success).toBe(true);
-    expect(String(result?.text)).toContain("0xpaid");
-    expect(callbackMessages).toEqual([{ text: expect.stringContaining("0xpaid") }]);
-    expect(calls).toEqual([{ worker: "0xworker", amount: 12_500_000n }]);
+    expect(String(result?.text)).toContain("Wallet: 0xabc");
+    expect(callbackMessages).toEqual([{ text: expect.stringContaining("Wallet: 0xabc") }]);
   });
 
   it("creates a plugin with canonical actions and no stale service/provider baggage", () => {

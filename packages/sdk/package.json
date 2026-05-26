@@ -1,7 +1,7 @@
 {
   "name": "@repnet/sdk",
-  "version": "0.1.2",
-  "description": "RepNet SDK \u2014 AI Agent Reputation Infrastructure. ERC-8004 identity, x402 payments, OriginTrail DKG receipts on Base.",
+  "version": "0.1.7",
+  "description": "RepNet SDK — AI Agent Reputation Infrastructure. ERC-8004 identity, x402 payments, OriginTrail DKG receipts on Base.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

@@ -2897,11 +2897,6 @@ export const RepNetFeeRouterABI = [
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "NotAuthorizedEscrow",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -2946,11 +2941,6 @@ export const RepNetFeeRouterABI = [
   },
   {
     "inputs": [],
-    "name": "WorkerPortionExceedsPot",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "ZeroAddress",
     "type": "error"
   },
@@ -2958,93 +2948,6 @@ export const RepNetFeeRouterABI = [
     "inputs": [],
     "name": "ZeroAmount",
     "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "escrow",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "authorized",
-        "type": "bool"
-      }
-    ],
-    "name": "EscrowAuthorized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "escrowFeeBps",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "escrowMinFee",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "escrowMaxFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "EscrowFeesUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "contractor",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "worker",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "workerAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "contractorRefund",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "totalFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "EscrowSettled",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -3075,6 +2978,37 @@ export const RepNetFeeRouterABI = [
       }
     ],
     "name": "FeeBoundsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "configVersion",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "feeBps",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "FeeConfigVersionUpdated",
     "type": "event"
   },
   {
@@ -3251,44 +3185,6 @@ export const RepNetFeeRouterABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "authorizedEscrows",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "calculateEscrowFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
@@ -3307,38 +3203,12 @@ export const RepNetFeeRouterABI = [
   },
   {
     "inputs": [],
-    "name": "escrowFeeBps",
+    "name": "currentConfigVersion",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint64",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "escrowMaxFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "escrowMinFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -3446,45 +3316,6 @@ export const RepNetFeeRouterABI = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "workerPortion",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalPot",
-        "type": "uint256"
-      }
-    ],
-    "name": "previewEscrow",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "workerReceives",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "contractorRefund",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "feePerSide",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalFee",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "jobAmount",
         "type": "uint256"
       }
@@ -3549,47 +3380,6 @@ export const RepNetFeeRouterABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "escrow",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "authorized",
-        "type": "bool"
-      }
-    ],
-    "name": "setAuthorizedEscrow",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "newEscrowFeeBps",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newEscrowMinFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newEscrowMaxFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setEscrowFees",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_minFeeBps",
         "type": "uint256"
@@ -3648,40 +3438,6 @@ export const RepNetFeeRouterABI = [
     ],
     "name": "setTreasury",
     "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "contractor",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "worker",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalPot",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "workerPortion",
-        "type": "uint256"
-      }
-    ],
-    "name": "settleEscrow",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -3759,412 +3515,126 @@ export const RepNetFeeRouterABI = [
   }
 ] as const;
 
-export const EscrowVaultABI = [
-  {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "inputs": [],
-    "name": "AlreadyInitialized",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ExceedsDeposited",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "OnlyParent",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ReentrancyGuardReentrantCall",
-    "type": "error"
-  },
+export const RepNetJobBoardABI = [
   {
     "inputs": [
       {
         "internalType": "address",
-        "name": "token",
-        "type": "address"
-      }
-    ],
-    "name": "SafeERC20FailedOperation",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ZeroAmount",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ZeroDeposit",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ZeroParent",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ZeroRecipient",
-    "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
+        "name": "_usdc",
         "type": "address"
       },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "FundsReleased",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "REPNET_VERSION",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "addDeposit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "token",
-        "type": "address"
-      }
-    ],
-    "name": "balance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
       {
         "internalType": "address",
-        "name": "_parentEscrow",
+        "name": "_treasury",
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "_jobId",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_opinionPublisher",
+        "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "_totalDeposited",
-        "type": "uint256"
-      }
-    ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "initialized",
-    "outputs": [
+        "internalType": "address",
+        "name": "_emergencyAuthority",
+        "type": "address"
+      },
       {
         "internalType": "bool",
-        "name": "",
+        "name": "_emergencyAuthorityMustBeContract",
         "type": "bool"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "jobId",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "parentEscrow",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "release",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalDeposited",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalReleased",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-] as const;
-
-export const RepNetEscrowABI = [
-  {
-    "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
   {
     "inputs": [],
-    "name": "ActiveDisputes",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "target",
-        "type": "address"
-      }
-    ],
-    "name": "AddressEmptyCode",
+    "name": "AcceptanceDeadlineExpired",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "AlreadyVoted",
+    "name": "AcceptanceDeadlineNotReached",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "DeadlineInPast",
+    "name": "AdditionalWorkDeadlineExpired",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "DeadlineNotPassed",
+    "name": "AdditionalWorkDeadlineNotReached",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "DeadlineNotSet",
+    "name": "AdditionalWorkDeadlineTooSoon",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "DeadlinePassed",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "implementation",
-        "type": "address"
-      }
-    ],
-    "name": "ERC1967InvalidImplementation",
+    "name": "AdditionalWorkLimitReached",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "ERC1967NonPayable",
+    "name": "DeliveryDeadlineExpired",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "EmptyAgreement",
+    "name": "EmergencyAuthorityMustBeContract",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "EmptyURI",
+    "name": "EmptyAdditionalWorkRequest",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "EnforcedPause",
+    "name": "EmptyCancellationReason",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "EvidenceLocked",
+    "name": "EmptyDeliveryHandle",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "ExpectedPause",
+    "name": "EmptyHash",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "ExtensionDeadlineNotReached",
+    "name": "EmptyOpinionSchemaVersion",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FailedCall",
+    "name": "EmptyRescueReason",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FailedDeployment",
+    "name": "FeeBpsOutOfBounds",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FeeAboveMaximum",
+    "name": "InvalidDeadline",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "FeeBelowMinimum",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "balance",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "needed",
-        "type": "uint256"
-      }
-    ],
-    "name": "InsufficientBalance",
+    "name": "JobNotEmergencyRescuable",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "InvalidInitialization",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidVote",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidVoteCount",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "MaxExceeds50Percent",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "MinExceedsMax",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NoPendingProposal",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NoSpecs",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NoUnrespondedFails",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotAuthorizedJudge",
+    "name": "NewEscrowsPaused",
     "type": "error"
   },
   {
@@ -4174,49 +3644,17 @@ export const RepNetEscrowABI = [
   },
   {
     "inputs": [],
-    "name": "NotInitializing",
+    "name": "NotEmergencyAuthority",
     "type": "error"
   },
   {
     "inputs": [],
-    "name": "NotParty",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotRegistered",
+    "name": "NotOpinionPublisher",
     "type": "error"
   },
   {
     "inputs": [],
     "name": "NotWorker",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      }
-    ],
-    "name": "OwnableInvalidOwner",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "OwnableUnauthorizedAccount",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "PenaltyExceeds100",
     "type": "error"
   },
   {
@@ -4226,22 +3664,7 @@ export const RepNetEscrowABI = [
   },
   {
     "inputs": [],
-    "name": "ResultsLengthMismatch",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ReviewPeriodExpired",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ReviewPeriodNotExpired",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ReviewPeriodTooLong",
+    "name": "ReviewDeadlineNotReached",
     "type": "error"
   },
   {
@@ -4257,48 +3680,7 @@ export const RepNetEscrowABI = [
   },
   {
     "inputs": [],
-    "name": "SelfEscrow",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "SpecIndexOutOfRange",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "TimelockNotExpired",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "TooManySpecs",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "UUPSUnauthorizedCallContext",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "slot",
-        "type": "bytes32"
-      }
-    ],
-    "name": "UUPSUnsupportedProxiableUUID",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "WeightsMismatch",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "WrongSpecState",
+    "name": "SelfJob",
     "type": "error"
   },
   {
@@ -4317,54 +3699,6 @@ export const RepNetEscrowABI = [
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "ZeroReviewPeriod",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "ZeroWeight",
-    "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "workerAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "contractorRefund",
-        "type": "uint256"
-      }
-    ],
-    "name": "AgreedPortionSettled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      }
-    ],
-    "name": "AutoApproved",
-    "type": "event"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -4376,17 +3710,11 @@ export const RepNetEscrowABI = [
       {
         "indexed": true,
         "internalType": "address",
-        "name": "party",
+        "name": "worker",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
       }
     ],
-    "name": "CollateralDeposited",
+    "name": "AdditionalWorkAccepted",
     "type": "event"
   },
   {
@@ -4396,68 +3724,6 @@ export const RepNetEscrowABI = [
         "indexed": true,
         "internalType": "uint256",
         "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "loser",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "winner",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "CollateralForfeited",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "party",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "CollateralReturned",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "specIndex",
         "type": "uint256"
       },
       {
@@ -4469,105 +3735,11 @@ export const RepNetEscrowABI = [
       {
         "indexed": false,
         "internalType": "string",
-        "name": "workerEvidenceURI",
+        "name": "reason",
         "type": "string"
       }
     ],
-    "name": "ContestFiled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [],
-    "name": "DisputeFeeBoundsProposalCancelled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newMin",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newMax",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "executeAfter",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeFeeBoundsProposed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newMin",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newMax",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeFeeBoundsUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [],
-    "name": "DisputeFeeProposalCancelled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newFeeBps",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "executeAfter",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeFeeProposed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldFeeBps",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newFeeBps",
-        "type": "uint256"
-      }
-    ],
-    "name": "DisputeFeeUpdated",
+    "name": "AdditionalWorkRefused",
     "type": "event"
   },
   {
@@ -4581,24 +3753,68 @@ export const RepNetEscrowABI = [
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "amountReleased",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "request",
+        "type": "string"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "amountRefunded",
-        "type": "uint256"
+        "internalType": "uint48",
+        "name": "deadline",
+        "type": "uint48"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "disputeFees",
-        "type": "uint256"
+        "internalType": "uint8",
+        "name": "additionalWorkRequestsUsed",
+        "type": "uint8"
       }
     ],
-    "name": "EscrowCompleted",
+    "name": "AdditionalWorkRequested",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "deliveryHandle",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "contractorReviewsUsed",
+        "type": "uint8"
+      }
+    ],
+    "name": "DeliveryResubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "deliveryHandle",
+        "type": "string"
+      }
+    ],
+    "name": "DeliverySubmitted",
     "type": "event"
   },
   {
@@ -4612,110 +3828,36 @@ export const RepNetEscrowABI = [
       },
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "contractor",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "worker",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "totalAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
         "internalType": "bytes32",
-        "name": "agreementHash",
+        "name": "reasonHash",
         "type": "bytes32"
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "specCount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "deliveryDeadline",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "reviewPeriod",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "collateralBps",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "collateralPenaltyBps",
-        "type": "uint256"
-      }
-    ],
-    "name": "EscrowCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      }
-    ],
-    "name": "EscrowRefunded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
       },
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
-        "name": "party",
+        "name": "caller",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "evidenceURI",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
       }
     ],
-    "name": "EvidenceSubmitted",
+    "name": "EmergencyJobRescue",
     "type": "event"
   },
   {
@@ -4725,73 +3867,22 @@ export const RepNetEscrowABI = [
         "indexed": true,
         "internalType": "uint256",
         "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "ExtensionApproved",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "ExtensionDenied",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "specIndex",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "newDeadline",
-        "type": "uint256"
-      }
-    ],
-    "name": "ExtensionRequested",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+        "internalType": "bool",
+        "name": "contractorFeedbackRight",
+        "type": "bool"
+      },
       {
         "indexed": false,
-        "internalType": "uint64",
-        "name": "version",
-        "type": "uint64"
+        "internalType": "bool",
+        "name": "workerFeedbackRight",
+        "type": "bool"
       }
     ],
-    "name": "Initialized",
+    "name": "FeedbackRightsRecorded",
     "type": "event"
   },
   {
@@ -4818,132 +3909,6 @@ export const RepNetEscrowABI = [
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "judge",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "authorized",
-        "type": "bool"
-      }
-    ],
-    "name": "JudgeUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "judge",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum RepNetEscrow.Verdict",
-        "name": "vote",
-        "type": "uint8"
-      }
-    ],
-    "name": "JudgeVoted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "previousOwner",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "OwnershipTransferred",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "Paused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldVotes",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newVotes",
-        "type": "uint256"
-      }
-    ],
-    "name": "RequiredVotesUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum RepNetEscrow.SpecStatus",
-        "name": "response",
-        "type": "uint8"
-      }
-    ],
-    "name": "SpecResponded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
         "internalType": "uint256",
         "name": "jobId",
         "type": "uint256"
@@ -4955,39 +3920,49 @@ export const RepNetEscrowABI = [
         "type": "address"
       },
       {
-        "indexed": false,
-        "internalType": "bool[]",
-        "name": "results",
-        "type": "bool[]"
-      }
-    ],
-    "name": "SpecsReviewed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "Unpaused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "internalType": "address",
-        "name": "implementation",
+        "name": "worker",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "agreementHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "publicSpecHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "privateSpecHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "deliveryDeadline",
+        "type": "uint48"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "reviewDeadline",
+        "type": "uint48"
       }
     ],
-    "name": "Upgraded",
+    "name": "JobAgreementCreated",
     "type": "event"
   },
   {
@@ -5001,12 +3976,49 @@ export const RepNetEscrowABI = [
       },
       {
         "indexed": true,
+        "internalType": "uint64",
+        "name": "configVersion",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "reputationFeeBps",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
         "internalType": "address",
-        "name": "vault",
+        "name": "paymentToken",
         "type": "address"
       }
     ],
-    "name": "VaultCreated",
+    "name": "JobConfigSnapshotted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint64",
+        "name": "configVersion",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "reputationFeeBps",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "paymentToken",
+        "type": "address"
+      }
+    ],
+    "name": "JobConfigVersionUpdated",
     "type": "event"
   },
   {
@@ -5019,67 +4031,93 @@ export const RepNetEscrowABI = [
         "type": "uint256"
       },
       {
-        "indexed": true,
+        "indexed": false,
+        "internalType": "string",
+        "name": "terminalPath",
+        "type": "string"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
-        "name": "specIndex",
+        "name": "amount",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "enum RepNetEscrow.Verdict",
-        "name": "verdict",
+        "internalType": "uint256",
+        "name": "workerReceived",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "contractorRefunded",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "protocolFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "JobReceiptRecorded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "paused",
+        "type": "bool"
+      }
+    ],
+    "name": "NewEscrowsPauseUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "opinionHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "opinionSchemaVersion",
+        "type": "string"
+      }
+    ],
+    "name": "OpinionReportPublished",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_ADDITIONAL_WORK_REQUESTS",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
         "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "specMetVotes",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "specNotMetVotes",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "disputeFee",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "winnerAmount",
-        "type": "uint256"
       }
     ],
-    "name": "VerdictReached",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "deliveryURI",
-        "type": "string"
-      }
-    ],
-    "name": "WorkDelivered",
-    "type": "event"
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
-    "name": "FEE_TIMELOCK",
+    "name": "MAX_REPUTATION_FEE_BPS",
     "outputs": [
       {
         "internalType": "uint256",
@@ -5092,12 +4130,12 @@ export const RepNetEscrowABI = [
   },
   {
     "inputs": [],
-    "name": "REPNET_VERSION",
+    "name": "MIN_ADDITIONAL_WORK_PERIOD",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "uint48",
         "name": "",
-        "type": "string"
+        "type": "uint48"
       }
     ],
     "stateMutability": "view",
@@ -5105,12 +4143,25 @@ export const RepNetEscrowABI = [
   },
   {
     "inputs": [],
-    "name": "UPGRADE_INTERFACE_VERSION",
+    "name": "REPUTATION_FEE_BPS",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "uint256",
         "name": "",
-        "type": "string"
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WORKER_ACCEPTANCE_PERIOD",
+    "outputs": [
+      {
+        "internalType": "uint48",
+        "name": "",
+        "type": "uint48"
       }
     ],
     "stateMutability": "view",
@@ -5122,14 +4173,9 @@ export const RepNetEscrowABI = [
         "internalType": "uint256",
         "name": "jobId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
       }
     ],
-    "name": "acceptFail",
+    "name": "acceptAdditionalWork",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -5148,16 +4194,21 @@ export const RepNetEscrowABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "activeDisputeCount",
-    "outputs": [
+    "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "jobId",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
       }
     ],
-    "stateMutability": "view",
+    "name": "cancelAfterReview",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -5168,149 +4219,86 @@ export const RepNetEscrowABI = [
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
       }
     ],
-    "name": "approveExtension",
+    "name": "cancelBeforeDelivery",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "name": "configByVersion",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "reputationFeeBps",
+        "type": "uint16"
+      },
+      {
+        "internalType": "address",
+        "name": "paymentToken",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "worker",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "agreementHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "publicSpecHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "privateSpecHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint48",
+        "name": "deliveryDeadline",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "reviewDeadline",
+        "type": "uint48"
       }
     ],
-    "name": "authorizedJudges",
+    "name": "createJob",
     "outputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "cancelDisputeFeeBoundsProposal",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "cancelDisputeFeeProposal",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      },
-      {
-        "internalType": "enum RepNetEscrow.Verdict",
-        "name": "_vote",
-        "type": "uint8"
-      }
-    ],
-    "name": "castVote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "jobId",
         "type": "uint256"
       }
     ],
-    "name": "claimAutoApprove",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimExtraWorkTimeout",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimRefund",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimUnrespondedFails",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "evidenceURI",
-        "type": "string"
-      }
-    ],
-    "name": "contestSpec",
-    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -5323,7 +4311,7 @@ export const RepNetEscrowABI = [
       },
       {
         "internalType": "uint256",
-        "name": "totalAmount",
+        "name": "amount",
         "type": "uint256"
       },
       {
@@ -5332,74 +4320,45 @@ export const RepNetEscrowABI = [
         "type": "bytes32"
       },
       {
-        "internalType": "uint256[]",
-        "name": "specWeights",
-        "type": "uint256[]"
+        "internalType": "bytes32",
+        "name": "publicSpecHash",
+        "type": "bytes32"
       },
       {
-        "internalType": "uint256",
+        "internalType": "bytes32",
+        "name": "privateSpecHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint48",
         "name": "deliveryDeadline",
-        "type": "uint256"
+        "type": "uint48"
       },
       {
-        "internalType": "uint256",
-        "name": "reviewPeriod",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "collateralBps",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "collateralPenaltyBps",
-        "type": "uint256"
+        "internalType": "uint48",
+        "name": "reviewDeadline",
+        "type": "uint48"
       }
     ],
-    "name": "createEscrow",
+    "name": "createUpfrontJob",
     "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       {
         "internalType": "uint256",
         "name": "jobId",
         "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "_deliveryURI",
-        "type": "string"
       }
     ],
-    "name": "deliverWork",
-    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "deliveryURIs",
+    "inputs": [],
+    "name": "currentConfigVersion",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "uint64",
         "name": "",
-        "type": "string"
+        "type": "uint64"
       }
     ],
     "stateMutability": "view",
@@ -5411,26 +4370,21 @@ export const RepNetEscrowABI = [
         "internalType": "uint256",
         "name": "jobId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
       }
     ],
-    "name": "denyExtension",
+    "name": "declineJobBeforeAccept",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "disputeFeeBps",
+    "name": "emergencyAuthority",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -5438,469 +4392,33 @@ export const RepNetEscrowABI = [
   },
   {
     "inputs": [],
-    "name": "executeDisputeFeeBounds",
+    "name": "emergencyAuthorityMustBeContract",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "reasonHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "emergencyRescueStuckJob",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "executeDisputeFeeBps",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "feeRouter",
-    "outputs": [
-      {
-        "internalType": "contract RepNetFeeRouter",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getAllSpecs",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint16",
-            "name": "weight",
-            "type": "uint16"
-          },
-          {
-            "internalType": "enum RepNetEscrow.SpecStatus",
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "internalType": "enum RepNetEscrow.Verdict",
-            "name": "verdict",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint16",
-            "name": "disputeFeeBps",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint48",
-            "name": "extensionDeadline",
-            "type": "uint48"
-          },
-          {
-            "internalType": "uint48",
-            "name": "extraWorkResponseDeadline",
-            "type": "uint48"
-          },
-          {
-            "internalType": "string",
-            "name": "contractorEvidenceURI",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "workerEvidenceURI",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct RepNetEscrow.SpecItem[]",
-        "name": "",
-        "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getCollateralInfo",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getJob",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "contractor",
-            "type": "address"
-          },
-          {
-            "internalType": "uint8",
-            "name": "specCount",
-            "type": "uint8"
-          },
-          {
-            "internalType": "enum RepNetEscrow.JobStatus",
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint16",
-            "name": "collateralBps",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint16",
-            "name": "collateralPenaltyBps",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint32",
-            "name": "reviewPeriod",
-            "type": "uint32"
-          },
-          {
-            "internalType": "address",
-            "name": "worker",
-            "type": "address"
-          },
-          {
-            "internalType": "uint48",
-            "name": "createdAt",
-            "type": "uint48"
-          },
-          {
-            "internalType": "uint48",
-            "name": "completedAt",
-            "type": "uint48"
-          },
-          {
-            "internalType": "uint48",
-            "name": "deliveryDeadline",
-            "type": "uint48"
-          },
-          {
-            "internalType": "uint48",
-            "name": "reviewDeadline",
-            "type": "uint48"
-          },
-          {
-            "internalType": "uint48",
-            "name": "workerResponseDeadline",
-            "type": "uint48"
-          },
-          {
-            "internalType": "uint256",
-            "name": "totalAmount",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "agreementHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountSettled",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountReleased",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountRefunded",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "disputeFeesCollected",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "escrowFeePaid",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "contractorCollateral",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "workerCollateral",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "collateralSettled",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "workerAmountSettled",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "contractorAmountSettled",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct RepNetEscrow.EscrowJob",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "getSpec",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint16",
-            "name": "weight",
-            "type": "uint16"
-          },
-          {
-            "internalType": "enum RepNetEscrow.SpecStatus",
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "internalType": "enum RepNetEscrow.Verdict",
-            "name": "verdict",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint16",
-            "name": "disputeFeeBps",
-            "type": "uint16"
-          },
-          {
-            "internalType": "uint48",
-            "name": "extensionDeadline",
-            "type": "uint48"
-          },
-          {
-            "internalType": "uint48",
-            "name": "extraWorkResponseDeadline",
-            "type": "uint48"
-          },
-          {
-            "internalType": "string",
-            "name": "contractorEvidenceURI",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "workerEvidenceURI",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct RepNetEscrow.SpecItem",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getVaultInfo",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "vaultBalance",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "getVoteTally",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "specMetVotes",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specNotMetVotes",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address[]",
-        "name": "voters",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "identityRegistry",
-    "outputs": [
-      {
-        "internalType": "contract IdentityRegistry",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_usdc",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_identityRegistry",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_feeRouter",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_vaultImplementation",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_disputeFeeBps",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_minDisputeFeeBps",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxDisputeFeeBps",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_requiredVotes",
-        "type": "uint256"
-      }
-    ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "jobVaults",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -5919,44 +4437,29 @@ export const RepNetEscrowABI = [
         "type": "address"
       },
       {
-        "internalType": "uint8",
-        "name": "specCount",
-        "type": "uint8"
-      },
-      {
-        "internalType": "enum RepNetEscrow.JobStatus",
-        "name": "status",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint16",
-        "name": "collateralBps",
-        "type": "uint16"
-      },
-      {
-        "internalType": "uint16",
-        "name": "collateralPenaltyBps",
-        "type": "uint16"
-      },
-      {
-        "internalType": "uint32",
-        "name": "reviewPeriod",
-        "type": "uint32"
-      },
-      {
         "internalType": "address",
         "name": "worker",
         "type": "address"
       },
       {
-        "internalType": "uint48",
-        "name": "createdAt",
-        "type": "uint48"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       },
       {
-        "internalType": "uint48",
-        "name": "completedAt",
-        "type": "uint48"
+        "internalType": "bytes32",
+        "name": "agreementHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "publicSpecHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "privateSpecHash",
+        "type": "bytes32"
       },
       {
         "internalType": "uint48",
@@ -5969,124 +4472,102 @@ export const RepNetEscrowABI = [
         "type": "uint48"
       },
       {
+        "internalType": "enum RepNetJobBoard.PaymentMode",
+        "name": "paymentMode",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum RepNetJobBoard.JobStatus",
+        "name": "status",
+        "type": "uint8"
+      },
+      {
         "internalType": "uint48",
-        "name": "workerResponseDeadline",
+        "name": "createdAt",
         "type": "uint48"
       },
       {
-        "internalType": "uint256",
-        "name": "totalAmount",
-        "type": "uint256"
+        "internalType": "uint48",
+        "name": "acceptanceDeadline",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "acceptedAt",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "finalizedAt",
+        "type": "uint48"
+      },
+      {
+        "internalType": "string",
+        "name": "cancellationReason",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "deliveryHandle",
+        "type": "string"
       },
       {
         "internalType": "bytes32",
-        "name": "agreementHash",
+        "name": "opinionHash",
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "amountSettled",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "opinionSchemaVersion",
+        "type": "string"
       },
       {
-        "internalType": "uint256",
-        "name": "amountReleased",
-        "type": "uint256"
+        "internalType": "uint48",
+        "name": "additionalWorkDeadline",
+        "type": "uint48"
       },
       {
-        "internalType": "uint256",
-        "name": "amountRefunded",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "additionalWorkRefusalReason",
+        "type": "string"
       },
       {
-        "internalType": "uint256",
-        "name": "disputeFeesCollected",
-        "type": "uint256"
+        "internalType": "uint8",
+        "name": "additionalWorkRequestsUsed",
+        "type": "uint8"
       },
       {
-        "internalType": "uint256",
-        "name": "escrowFeePaid",
-        "type": "uint256"
+        "internalType": "uint8",
+        "name": "contractorReviewsUsed",
+        "type": "uint8"
       },
       {
-        "internalType": "uint256",
-        "name": "contractorCollateral",
-        "type": "uint256"
+        "internalType": "uint64",
+        "name": "configVersion",
+        "type": "uint64"
       },
       {
-        "internalType": "uint256",
-        "name": "workerCollateral",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "collateralSettled",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "workerAmountSettled",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "contractorAmountSettled",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "uint16",
+        "name": "reputationFeeBps",
+        "type": "uint16"
       },
       {
         "internalType": "address",
-        "name": "",
+        "name": "paymentToken",
         "type": "address"
       }
     ],
-    "name": "judgeVotes",
-    "outputs": [
-      {
-        "internalType": "enum RepNetEscrow.Verdict",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "maxDisputeFeeBps",
+    "name": "newEscrowsPaused",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "minDisputeFeeBps",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -6107,7 +4588,7 @@ export const RepNetEscrowABI = [
   },
   {
     "inputs": [],
-    "name": "owner",
+    "name": "opinionPublisher",
     "outputs": [
       {
         "internalType": "address",
@@ -6120,333 +4601,86 @@ export const RepNetEscrowABI = [
   },
   {
     "inputs": [],
-    "name": "pause",
+    "name": "pauseNewEscrows",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "paused",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pendingDisputeFeeBoundsTimestamp",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pendingDisputeFeeBps",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pendingDisputeFeeTimestamp",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pendingMaxDisputeFeeBps",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pendingMinDisputeFeeBps",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_min",
+        "name": "jobId",
         "type": "uint256"
       },
-      {
-        "internalType": "uint256",
-        "name": "_max",
-        "type": "uint256"
-      }
-    ],
-    "name": "proposeDisputeFeeBounds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "newFeeBps",
-        "type": "uint256"
-      }
-    ],
-    "name": "proposeDisputeFeeBps",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "proxiableUUID",
-    "outputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "opinionHash",
         "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "opinionSchemaVersion",
+        "type": "string"
       }
     ],
-    "stateMutability": "view",
+    "name": "publishOpinionReport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "refundBeforeAccept",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "refuseAdditionalWork",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "releaseJob",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "renounceOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newDeadline",
-        "type": "uint256"
-      }
-    ],
-    "name": "requestExtraWork",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "requiredVotes",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "passed",
-        "type": "bool"
-      }
-    ],
-    "name": "reviewExtendedSpec",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool[]",
-        "name": "results",
-        "type": "bool[]"
-      }
-    ],
-    "name": "reviewSpecs",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_min",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_max",
-        "type": "uint256"
-      }
-    ],
-    "name": "setDisputeFeeBounds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "newFeeBps",
-        "type": "uint256"
-      }
-    ],
-    "name": "setDisputeFeeBps",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "judge",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "authorized",
-        "type": "bool"
-      }
-    ],
-    "name": "setJudge",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_requiredVotes",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRequiredVotes",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "specs",
+    "name": "reputationFeeBps",
     "outputs": [
       {
         "internalType": "uint16",
-        "name": "weight",
+        "name": "",
         "type": "uint16"
-      },
-      {
-        "internalType": "enum RepNetEscrow.SpecStatus",
-        "name": "status",
-        "type": "uint8"
-      },
-      {
-        "internalType": "enum RepNetEscrow.Verdict",
-        "name": "verdict",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint16",
-        "name": "disputeFeeBps",
-        "type": "uint16"
-      },
-      {
-        "internalType": "uint48",
-        "name": "extensionDeadline",
-        "type": "uint48"
-      },
-      {
-        "internalType": "uint48",
-        "name": "extraWorkResponseDeadline",
-        "type": "uint48"
-      },
-      {
-        "internalType": "string",
-        "name": "contractorEvidenceURI",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "workerEvidenceURI",
-        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -6460,17 +4694,17 @@ export const RepNetEscrowABI = [
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "specIndex",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "request",
+        "type": "string"
       },
       {
-        "internalType": "string",
-        "name": "evidenceURI",
-        "type": "string"
+        "internalType": "uint48",
+        "name": "deadline",
+        "type": "uint48"
       }
     ],
-    "name": "submitEvidence",
+    "name": "requestAdditionalWork",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -6478,39 +4712,70 @@ export const RepNetEscrowABI = [
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "deliveryHandle",
+        "type": "string"
       }
     ],
-    "name": "transferOwnership",
+    "name": "resubmitDelivery",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "newReputationFeeBps",
+        "type": "uint16"
+      }
+    ],
+    "name": "setReputationFeeBps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "deliveryHandle",
+        "type": "string"
+      }
+    ],
+    "name": "submitDelivery",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "unpause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "treasury",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newImplementation",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "data",
-        "type": "bytes"
-      }
-    ],
-    "name": "upgradeToAndCall",
+    "inputs": [],
+    "name": "unpauseNewEscrows",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -6527,16 +4792,16 @@ export const RepNetEscrowABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "vaultImplementation",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "name": "workerWithdrawAfterAccept",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ] as const;

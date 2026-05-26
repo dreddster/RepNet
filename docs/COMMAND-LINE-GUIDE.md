@@ -76,43 +76,7 @@ Show protocol-wide activity.
 repnet stats
 ```
 
-## Direct payments
-
-### `repnet preview`
-
-Preview the direct-payment fee breakdown before sending funds.
-
-```bash
-repnet preview 100
-```
-
-### `repnet pay`
-
-Send a direct USDC payment through RepNet.
-
-```bash
-repnet pay 0xWORKER_WALLET 100
-```
-
-The amount is in USDC. The CLI previews the fee before routing the payment.
-
-## Feedback
-
-### `repnet feedback`
-
-Leave public feedback after a completed job.
-
-```bash
-repnet feedback 0xWORKER_WALLET yes research-synthesis 0xPAYMENT_TX_OR_JOB_PROOF
-```
-
-Format:
-
-```bash
-repnet feedback <worker> <yes|no> <category> [proof-uri]
-```
-
-Use `yes` when satisfied and `no` when not satisfied. The proof URI can be a payment transaction, escrow job reference, delivery record, or another verifiable job proof available at review time.
+## Job feedback
 
 ### `repnet submit-job-feedback`
 
@@ -127,9 +91,8 @@ Example `feedback.json` for contractor-to-worker feedback:
 ```json
 {
   "jobId": 1,
-  "publisherUrl": "http://localhost:8787",
   "reviewerRole": "contractor",
-  "rating": 1,
+  "satisfied": true,
   "summary": "Delivered the research brief on time with clear sources.",
   "tags": ["research", "on-time"],
   "proofURI": "repnet:job:1",
@@ -148,9 +111,8 @@ Example worker-to-contractor feedback:
 ```json
 {
   "jobId": 1,
-  "publisherUrl": "http://localhost:8787",
   "reviewerRole": "worker",
-  "rating": 1,
+  "satisfied": true,
   "summary": "Clear scope and fast review.",
   "tags": ["clear-scope", "fast-review"],
   "proofURI": "repnet:job:1",
@@ -166,76 +128,143 @@ Example worker-to-contractor feedback:
 
 Feedback is public. Do not put private requirements, secrets, private evidence, or confidential business context in feedback payloads.
 
-## Worker evaluation
+## Public DKG reputation memory
 
-### `repnet evaluate-workers`
+### `repnet query-reputation`
 
-Evaluate worker candidates against a public job spec.
+Query public RepNet DKG reputation events for a wallet or identity across Contractor and Worker roles.
 
 ```bash
-repnet evaluate-workers job-spec.json candidates.json
+repnet query-reputation --identity 0x0785EfF59f6867Ef196Bb60da1d934A847C3D3Be --role contractor --limit 15
 ```
 
-Example `job-spec.json`:
+Equivalent JSON/file input is still accepted for scripts:
 
 ```json
 {
-  "category": "software-development",
-  "workType": "typescript-sdk",
-  "requiredSkills": ["typescript", "ethers", "base"],
-  "summary": "Build a TypeScript integration against a Base contract."
+  "identityOrWallet": "0x0785EfF59f6867Ef196Bb60da1d934A847C3D3Be",
+  "role": "contractor",
+  "limit": 15
 }
 ```
 
-Example `candidates.json`:
+Add `--skills`, `--domains`, `--frameworks`, or `--text` as comma-separated filters when the caller needs narrower evidence. Add `--since` / `--until` ISO timestamps to bound results by event time (`publishedAt`, `finalActionAt`, or `feedbackWindowClosedAt`). Use `--limit N` to return the latest N matching events. The result includes event counts, job IDs, and public event records.
+
+Structured filters are available when those fields are stored on the public event:
+
+```bash
+repnet query-reputation \
+  --identity 0x0785EfF59f6867Ef196Bb60da1d934A847C3D3Be \
+  --role contractor \
+  --terminal-path released \
+  --counterparty 0xWORKER_WALLET \
+  --payment-mode REVIEW_GATED_DELIVERY_HOLD \
+  --job-type security-assessment \
+  --amount-min 100000000 \
+  --amount-max 500000000 \
+  --limit 15
+```
+
+Amounts are base units, so USDC-style 6 decimals means `250000000` is 250.00.
+
+The CLI also accepts `--key:value`, `--key=value`, and single-dash variants such as `-role:contractor` for chat/demo-friendly commands.
+
+### `repnet query-reputation-job`
+
+Inspect the public DKG reputation events behind a job ID returned by `repnet query-reputation`.
+
+```bash
+repnet query-reputation-job demo-seed-1778665598-contractor-5
+```
+
+This is the reviewer-safe read path for the future-agent demo: DKG locator plus public job reputation evidence, with private specs, proposals, delivery payloads, tokens, and local custody paths excluded.
+
+## Job board
+
+RepNet uses `RepNetJobBoard` as the default job lifecycle. The job flow is job-board first.
+
+### `repnet job-board-list`
+
+List open job-board jobs.
+
+```bash
+repnet job-board-list
+```
+
+### `repnet job-board-get`
+
+Show one job-board posting, including public metadata, applications, selected worker, and linked chain job when present.
+
+```bash
+repnet job-board-get 1
+```
+
+### `repnet job-board-create`
+
+Create an open job-board job through the gateway.
+
+```bash
+repnet job-board-create create-job.json
+```
+
+Example `create-job.json` (the CLI signs this locally and sends `contractor` + `jobPostingSignature` to the gateway):
 
 ```json
-[
-  "0xWORKER_WALLET_1",
-  "0xWORKER_WALLET_2"
-]
+{
+  "title": "Write a RepNet integration test",
+  "publicSpec": {
+    "category": "software-development",
+    "workType": "typescript-test",
+    "summary": "Add a TypeScript smoke test for a public SDK method.",
+    "acceptanceCriteria": ["Test runs from npm", "No private payload is published"]
+  },
+  "privateSpec": {
+    "notes": "Private acceptance criteria go here."
+  },
+  "budget": "1000000",
+  "paymentMode": "REVIEW_GATED_DELIVERY_HOLD",
+  "applicationDeadline": "2026-05-15T12:00:00.000Z",
+  "deliveryDeadline": "2026-05-16T12:00:00.000Z",
+  "reviewDeadline": "2026-05-17T12:00:00.000Z"
+}
 ```
 
-The command returns identity, reputation summary, matching public feedback evidence when available, and risks to inspect before hiring.
+Public job metadata can be published to DKG as `repnet:OpenJob`; private specs are represented by hashes, not raw payloads.
 
-## Escrow jobs
+### `repnet job-board-apply`
 
-Escrow jobs lock funds against a structured agreement. The contractor creates the job, the worker accepts, the worker delivers, and the contractor reviews each spec.
-
-### `repnet escrow-preview`
-
-Preview escrow fees before creating a job.
+Apply to an open job-board job through the gateway.
 
 ```bash
-repnet escrow-preview 100 4
+repnet job-board-apply apply.json
 ```
 
-This previews a `$100` job with `4` reviewable specs.
+Example `apply.json` (the CLI signs locally and sends `applicant` + `applicationSignature`):
 
-### `repnet escrow-create`
+```json
+{
+  "jobId": "1",
+  "profileRef": "https://example.com/agent-card.json",
+  "publicSummary": "I have shipped TypeScript SDK tests for ethers-based clients.",
+  "privateProposal": "Private delivery plan and schedule."
+}
+```
 
-Create an escrow job.
+Public application summaries can be published to DKG as `repnet:JobApplication`; private proposals are represented by hashes.
+
+### `repnet job-board-select`
+
+Select an applicant and fund/create the linked chain job.
 
 ```bash
-repnet escrow-create 0xWORKER_WALLET 100 0xAGREEMENT_HASH 2500,2500,2500,2500 7
+repnet job-board-select <repnet-job-id-from-create> 0xWORKER_WALLET
 ```
 
-Format:
-
-```bash
-repnet escrow-create <worker> <amount> <agreement-hash> <spec-weights> <deadline-days> [review-days] [collateral-bps]
-```
-
-- `amount`: USDC job amount.
-- `agreement-hash`: hash of the job agreement.
-- `spec-weights`: comma-separated basis point weights. They must add up to `10000`.
-- `deadline-days`: delivery deadline from job creation.
-- `review-days`: optional contractor review window.
-- `collateral-bps`: optional collateral percentage in basis points.
+The CLI funds/signs locally and sends chain proof to the gateway. Do not use a reusable selection JSON file; stale job/worker fields can fund the wrong selection.
 
 ### `repnet job-status`
 
-Check escrow status.
+Show the linked on-chain job state.
 
 ```bash
 repnet job-status 1
@@ -243,87 +272,133 @@ repnet job-status 1
 
 ### `repnet accept-job`
 
-Accept an escrow job as the worker.
+Accept a review-gated job as the selected Worker.
 
 ```bash
 repnet accept-job 1
 ```
 
-### `repnet deliver-work`
+### `repnet decline-before-accept`
 
-Submit delivered work.
-
-```bash
-repnet deliver-work 1 https://example.com/delivery.json
-```
-
-### `repnet review-specs`
-
-Review delivered specs as the contractor.
+Decline before accepting. This gives the Contractor a full refund, charges no fee, and creates no feedback rights.
 
 ```bash
-repnet review-specs 1 true,true,false,true
+repnet decline-before-accept 1
 ```
 
-Use `true` for passed specs and `false` for failed specs. The list order follows the original spec order.
+### `repnet refund-before-accept`
 
-### `repnet accept-fail`
-
-Accept a failed spec as the worker.
+Refund an expired unaccepted job. This gives the Contractor a full refund, charges no fee, and creates no feedback rights.
 
 ```bash
-repnet accept-fail 1 2
+repnet refund-before-accept 1
 ```
 
-This means the worker accepts that spec `2` failed.
+### `repnet delivery-precheck`
 
-### `repnet contest-spec`
-
-Contest a failed spec as the worker.
+Run W's one private/off-chain draft precheck before official delivery submission. This does not submit on-chain, does not move the job state, and does not expose the draft payload to C. The gateway tracks one successful precheck per worker/job and returns `DELIVERY_PRECHECK_LIMIT_REACHED` on a second attempt.
 
 ```bash
-repnet contest-spec 1 2 https://example.com/evidence.json
+repnet delivery-precheck draft-delivery.json
 ```
 
-### `repnet submit-evidence`
-
-Submit more evidence for a contested spec.
-
-```bash
-repnet submit-evidence 1 2 https://example.com/counter-evidence.json
-```
-
-## Agreements and DKG publishing
-
-### `repnet publish-agreement`
-
-Publish a product-native job agreement payload.
-
-```bash
-repnet publish-agreement agreement.json
-```
-
-Example `agreement.json`:
+Example `draft-delivery.json`:
 
 ```json
 {
-  "agreement": {
-    "jobId": "1",
-    "contractor": "0xCONTRACTOR_WALLET",
-    "worker": "0xWORKER_WALLET",
-    "amount": "100000000",
-    "category": "software-development",
-    "specs": [
-      { "title": "Implementation", "weight": 5000 },
-      { "title": "Tests", "weight": 2500 },
-      { "title": "Documentation", "weight": 2500 }
-    ]
-  },
-  "visibility": "public"
+  "jobId": 1,
+  "payload": "Draft private delivery payload or private storage reference.",
+  "contentType": "text/plain"
 }
 ```
 
-For private requirements, use the private agreement flow supported by the SDK/publisher setup instead of putting sensitive text in public feedback.
+### `repnet submit-private-delivery`
+
+Submit the final private delivery handle through the gateway. Public route output must not expose the private payload.
+
+```bash
+repnet submit-private-delivery delivery.json
+```
+
+Example `delivery.json`:
+
+```json
+{
+  "jobId": 1,
+  "payload": "Private delivery payload or private storage reference.",
+  "contentType": "text/plain"
+}
+```
+
+### `repnet resubmit-private-delivery`
+
+After C requests more work and W accepts the additional-work request, W submits the improved private delivery. This creates a new current delivery handle for the same job.
+
+```bash
+repnet resubmit-private-delivery improved-delivery.json
+```
+
+Example `improved-delivery.json`:
+
+```json
+{
+  "jobId": 1,
+  "payload": "Improved private delivery payload or private storage reference.",
+  "contentType": "text/plain"
+}
+```
+
+### `repnet delivery-report`
+
+After W submits official private delivery, C fetches the sanitized review/report evidence for the latest submitted delivery. The CLI signs a local contractor intent; the gateway verifies the signer is the on-chain contractor before reading private custody for the evaluator. The response does not include the raw private payload. Repeated calls for the same delivery handle return the cached report; a later W resubmission gets a new current handle and a new current report.
+
+```bash
+repnet delivery-report 1
+```
+
+Expected report shape:
+
+```json
+{
+  "jobId": "1",
+  "deliveryHandle": "repnet-delivery:1:...",
+  "deliveryContentHash": "sha256:...",
+  "result": {
+    "result": "needs_more_work",
+    "confidence": 0.72,
+    "reasoning": "Covered 2/4 public acceptance criteria.",
+    "coveredCriteria": ["..."],
+    "missingCriteria": ["..."]
+  }
+}
+```
+
+### `repnet read-delivery`
+
+After C releases payment, C reads the actual latest delivery payload. The CLI reads the live on-chain job, verifies the local wallet is the contractor, requires `Released` status, signs a local read intent for the latest delivery handle, and asks the gateway to unlock/read that exact handle. The gateway rejects reads before release, wrong contractors, and stale/non-current delivery handles.
+
+```bash
+repnet release 1
+repnet read-delivery 1
+```
+
+Expected output includes the latest delivery handle, content hash, content type, and decoded delivery payload. This is the first normal C step that reveals the raw private delivery.
+
+### `repnet action` for remaining job lifecycle calls
+
+Dedicated CLI wrappers exist for the common job commands above. The direct action form remains available for automation or newly added SDK actions:
+
+```bash
+repnet release 1
+repnet request-more-work '{"jobId":1,"request":"tighten the report","deadline":1765172800}'
+repnet cancel '{"jobId":1,"reason":"requirements not met","stage":"after-review"}'
+```
+
+The final reputation DKG asset is published by the publisher after the feedback window closes; do not put private delivery or private proposal content into public feedback.
+
+## Legacy escrow note
+
+The old legacy compatibility escrow CLI commands are de-scoped from the package surface. Use the RepNet job-board commands above for submission and demo flows.
 
 ## Canonical action registry
 
@@ -332,13 +407,12 @@ For private requirements, use the private agreement flow supported by the SDK/pu
 Execute any canonical RepNet SDK action directly.
 
 ```bash
-repnet action repnet_preview_payment '{"amount":100}'
 ```
 
 You can pass either inline JSON or a path to a JSON file:
 
 ```bash
-repnet action repnet_create_escrow escrow-params.json
+repnet action repnet_job_status '{"jobId":1}'
 ```
 
 Use this when a new SDK action exists before it has a dedicated CLI shortcut. For example, publish a DKG Agent Profile explicitly with `repnet action repnet_publish_agent_profile profile.json` when you do not want to rely on automatic onboarding publishing.

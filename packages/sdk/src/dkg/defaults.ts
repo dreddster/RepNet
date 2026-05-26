@@ -1,0 +1,2 @@
+export const REPNET_OFFICIAL_CONTEXT_GRAPH_ID = "0x8fb6dcd4B3e07E610958750DbD72Ae4acdce3738/repnet-v2-official";
+export const REPNET_OFFICIAL_CONTEXT_GRAPH_URI = `did:dkg:context-graph:${REPNET_OFFICIAL_CONTEXT_GRAPH_ID}`;

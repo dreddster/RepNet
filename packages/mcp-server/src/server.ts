@@ -7,7 +7,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { ethers } from "ethers";
-import { RepNet, createRepNetActions } from "@repnet/sdk";
+import { RepNet, REPNET_OFFICIAL_CONTEXT_GRAPH_ID, createRepNetActions } from "@repnet/sdk";
 
 // Initialize RepNet client from environment
 function createClient(): RepNet {
@@ -16,7 +16,7 @@ function createClient(): RepNet {
   const rpcUrl = process.env.REPNET_RPC_URL;
   const dkgApiUrl = process.env.REPNET_DKG_API_URL || process.env.DKG_API_URL;
   const dkgAuthToken = process.env.REPNET_DKG_AUTH_TOKEN || process.env.DKG_AUTH_TOKEN;
-  const dkgContextGraphId = process.env.REPNET_DKG_CONTEXT_GRAPH_ID || process.env.DKG_CONTEXT_GRAPH_ID;
+  const dkgContextGraphId = process.env.REPNET_DKG_CONTEXT_GRAPH_ID || process.env.DKG_CONTEXT_GRAPH_ID || REPNET_OFFICIAL_CONTEXT_GRAPH_ID;
   const dkgPublishRoute = process.env.REPNET_DKG_PUBLISH_ROUTE || process.env.DKG_PUBLISH_ROUTE;
   const dkgQueryRoute = process.env.REPNET_DKG_QUERY_ROUTE || process.env.DKG_QUERY_ROUTE;
 
@@ -34,8 +34,8 @@ function createClient(): RepNet {
     signer,
     ...(dkgApiUrl ? {
       dkg: {
-        mode: "v10-node" as const,
-        v10: {
+        mode: "node" as const,
+        memory: {
           apiUrl: dkgApiUrl,
           authToken: dkgAuthToken,
           contextGraphId: dkgContextGraphId,
@@ -48,7 +48,7 @@ function createClient(): RepNet {
 }
 
 const server = new Server(
-  { name: "repnet", version: "0.1.0" },
+  { name: "repnet", version: "0.1.3" },
   { capabilities: { tools: {} } }
 );
 

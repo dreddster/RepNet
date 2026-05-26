@@ -29,7 +29,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  *      Owner controls: registrar management, pause/unpause, fee config, platform approval.
  *      See deploy script for owner configuration.
  *
- * v2 changes:
+ * changes:
  *   - Ownable instead of custom admin (transferable, standard)
  *   - burn() for key compromise / unregistration
  *   - _update() override to sync walletToAgent on NFT transfers
@@ -41,7 +41,7 @@ contract IdentityRegistry is ERC721URIStorage, EIP712, Ownable, Pausable, Reentr
     using ECDSA for bytes32;
 
     /// @notice RepNet contract suite release identifier.
-    string public constant REPNET_VERSION = "v10";
+    string public constant REPNET_VERSION = "release";
     using SafeERC20 for IERC20;
 
     uint256 private _nextAgentId = 1;

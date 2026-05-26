@@ -8,6 +8,7 @@ const publishable = [
   { workspace: "@repnet/mcp-server", dir: "packages/mcp-server", requireReadme: true, bin: "repnet-mcp", requiredFiles: ["dist/server.js"] },
   { workspace: "@repnet/vercel-ai", dir: "packages/vercel-ai", requireReadme: true, requiredFiles: ["dist/index.js", "dist/index.d.ts"] },
   { workspace: "@repnet/cli", dir: "packages/cli", requireReadme: true, bin: "repnet", requiredFiles: ["dist/cli.js"] },
+  { workspace: "@repnet/signer", dir: "packages/signer", requireReadme: true, bin: "repnet-signer", requiredFiles: ["dist/cli.js", "dist/index.js", "dist/index.d.ts"] },
   { workspace: "@repnet/agentkit-plugin", dir: "packages/agentkit-plugin", requireReadme: true, requiredFiles: ["dist/index.js", "dist/index.d.ts"] },
   { workspace: "@repnet/plugin-eliza", dir: "packages/plugin-eliza", requireReadme: true, requiredFiles: ["dist/index.js", "dist/index.d.ts"] },
 ];

@@ -22,93 +22,115 @@ export const repnetActionSchemas = {
   repnet_lookup: z.object({
     wallet: z.string().describe("Wallet address to look up"),
   }),
-  repnet_evaluate_workers: z.object({
-    jobSpec: z.record(z.any()).describe("Public job spec facets to match"),
-    candidates: z.array(z.record(z.any())).describe("Candidate workers identified by wallet and/or ERC agentId"),
+  repnet_query_reputation: z.object({
+    identityOrWallet: z.string().describe("Wallet address or RepNet identity to query in the public DKG reputation graph"),
+    role: z.enum(["contractor", "worker"]).optional().describe("Optional role filter"),
+    skills: z.array(z.string()).optional().describe("Optional skill/tag filters"),
+    domains: z.array(z.string()).optional().describe("Optional domain filters"),
+    frameworks: z.array(z.string()).optional().describe("Optional framework filters"),
+    text: z.array(z.string()).optional().describe("Optional free-text filters over public summaries/tags"),
+    since: z.string().optional().describe("Optional ISO timestamp lower bound over publishedAt/finalActionAt/feedbackWindowClosedAt"),
+    until: z.string().optional().describe("Optional ISO timestamp upper bound over publishedAt/finalActionAt/feedbackWindowClosedAt"),
+    terminalPath: z.string().optional().describe("Optional terminal path filter"),
+    counterparty: z.string().optional().describe("Optional wallet filter for the other side of the job"),
+    paymentMode: z.string().optional().describe("Optional payment mode filter"),
+    jobType: z.string().optional().describe("Optional structured job/work type filter"),
+    amountMin: z.string().optional().describe("Optional minimum job amount in base units"),
+    amountMax: z.string().optional().describe("Optional maximum job amount in base units"),
+    limit: z.number().optional().describe("Maximum public DKG events to return"),
   }),
-  repnet_preview_payment: z.object({
-    amount: z.number().describe("Job amount in USDC"),
-  }),
-  repnet_pay: z.object({
-    worker: z.string().describe("Worker wallet address"),
-    amount: z.number().describe("Job amount in USDC"),
-  }),
-  repnet_feedback: z.object({
-    targetWallet: z.string().describe("Target wallet address to review"),
-    satisfied: z.boolean().describe("Satisfied with the work? (true/false)"),
-    category: z.string().describe("Job category (e.g., research-synthesis)"),
-    receiptURI: z.string().optional().describe("Payment tx / escrow job / verifiable job proof reference available at feedback time"),
+  repnet_query_reputation_job: z.object({
+    jobId: z.string().describe("Public RepNet job ID to inspect in DKG reputation memory"),
   }),
   repnet_submit_job_feedback: z.object({
-    jobId: z.number().describe("Escrow job ID with an open feedback window"),
-    publisherUrl: z.string().describe("RepNet publisher API base URL"),
+    jobId: z.number().describe("Job ID with an open feedback window"),
     reviewerRole: z.enum(["contractor", "worker"]).describe("Your role in this job"),
     satisfied: z.boolean().describe("Binary satisfaction signal"),
     summary: z.string().describe("Public one-sentence feedback summary"),
     tags: z.array(z.string()).optional().describe("Public searchable feedback tags"),
-    proofURI: z.string().optional().describe("Payment tx / escrow job / verifiable job proof"),
+    proofURI: z.string().optional().describe("Payment tx / job / verifiable job proof"),
     publicJobMetadata: z.record(z.any()).optional().describe("Contractor→Worker public searchable metadata"),
     contractorFeedback: z.record(z.any()).optional().describe("Worker→Contractor public behavior metadata"),
   }),
   repnet_stats: z.object({}),
-  repnet_publish_agreement: z.object({
-    jobId: z.number().describe("On-chain escrow job ID"),
-    agreementHash: z.string().describe("Keccak256 hash anchored on-chain"),
-    description: z.string().describe("Human-readable job agreement description"),
-    specs: z.array(z.record(z.any())).describe("Agreement specs with id, description, weight"),
-    worker: z.string().describe("Worker wallet"),
-    contractor: z.string().describe("Contractor wallet"),
-    amount: z.string().describe("USDC amount in 6-decimal base units"),
-    deliveryDeadline: z.number().describe("Unix timestamp delivery deadline"),
-    reviewPeriod: z.number().describe("Review period in seconds"),
-    specVisibility: z.enum(["public", "private"]).optional().describe("Whether specs/requirements are public or private"),
+  repnet_job_board_create: z.object({
+    title: z.string(),
+    publicSpec: z.record(z.any()),
+    privateSpec: z.record(z.any()),
+    budget: z.string(),
+    paymentMode: z.enum(["UPFRONT", "REVIEW_GATED_DELIVERY_HOLD"]),
+    applicationDeadline: z.string(),
+    deliveryDeadline: z.string(),
+    reviewDeadline: z.string(),
   }),
-  repnet_create_escrow: z.object({
-    worker: z.string().describe("Worker wallet address"),
-    amount: z.number().describe("Job amount in USDC"),
-    agreementHash: z.string().describe("Hex-encoded keccak256 hash of the job agreement"),
-    deadlineDays: z.number().describe("Days until delivery deadline"),
-    reviewDays: z.number().optional().describe("Days for review period after delivery (default: 3)"),
-    specWeights: z
-      .array(z.number())
-      .describe("Weight per spec in basis points, must sum to 10000 (e.g. [4000, 3000, 3000])"),
-    collateralBps: z.number().optional().describe("Optional collateral in basis points (0 = none, 1500 = 15%)"),
+  repnet_job_board_apply: z.object({
+    jobId: z.string(),
+    profileRef: z.string(),
+    publicSummary: z.string(),
+    privateProposal: z.string().optional(),
   }),
-  repnet_get_job: z.object({
-    jobId: z.number().describe("On-chain escrow job ID"),
+  repnet_job_board_select: z.object({
+    jobId: z.string(),
+    worker: z.string(),
   }),
-  repnet_job_status: z.object({
-    jobId: z.number().describe("On-chain escrow job ID"),
+  repnet_job_board_get: z.object({ jobId: z.string() }),
+  repnet_job_board_private_specs: z.object({
+    jobId: z.string().describe("Job-board job ID whose approved/funded private specs should be read"),
+    worker: z.string().describe("Selected Worker wallet address signing the private-spec read"),
+    timestamp: z.string().describe("ISO timestamp included in the signed read challenge"),
+    readSignature: z.string().describe("Worker signature over the private-spec read challenge"),
   }),
-  repnet_accept_job: z.object({
-    jobId: z.number().describe("The escrow job ID to accept"),
+  repnet_job_board_list: z.object({}),
+  repnet_create_upfront_job: z.object({
+    worker: z.string(),
+    amount: z.number(),
+    agreementHash: z.string(),
+    publicSpecHash: z.string(),
+    privateSpecHash: z.string(),
+    deliveryDeadline: z.number(),
+    reviewDeadline: z.number(),
   }),
-  repnet_deliver_work: z.object({
-    jobId: z.number().describe("The escrow job ID"),
-    deliveryURI: z.string().describe("URI pointing to the delivered work (e.g. ipfs://..., https://...)"),
+  repnet_create_review_hold_job: z.object({
+    worker: z.string(),
+    amount: z.number(),
+    agreementHash: z.string(),
+    publicSpecHash: z.string(),
+    privateSpecHash: z.string(),
+    deliveryDeadline: z.number(),
+    reviewDeadline: z.number(),
   }),
-  repnet_review_specs: z.object({
-    jobId: z.number().describe("The escrow job ID"),
-    results: z.array(z.boolean()).describe("Array of Pass (true) / Fail (false) for each spec"),
+  repnet_accept_job: z.object({ jobId: z.number() }),
+  repnet_decline_before_accept: z.object({ jobId: z.number() }),
+  repnet_refund_before_accept: z.object({ jobId: z.number() }),
+  repnet_submit_private_delivery: z.object({
+    jobId: z.number(),
+    payload: z.string(),
+    contentType: z.string().optional(),
+    deliveryAction: z.enum(["precheck", "submit", "abort"]).optional().describe("Staged delivery choice: precheck, submit, or abort"),
+    artifacts: z.array(z.object({
+      path: z.string(),
+      contentHash: z.string(),
+      artifactType: z.string(),
+      openInstruction: z.string(),
+    })).optional().describe("Concrete delivered artifact references visible after release"),
   }),
-  repnet_accept_fail: z.object({
-    jobId: z.number().describe("The escrow job ID"),
-    specIndex: z.number().describe("The spec index to accept as failed"),
+  repnet_request_more_work: z.object({
+    jobId: z.number(),
+    request: z.string().describe("Public additional-work request text recorded on-chain"),
+    deadline: z.number().describe("Unix timestamp for the worker response/resubmission deadline"),
   }),
-  repnet_contest_spec: z.object({
-    jobId: z.number().describe("The escrow job ID"),
-    specIndex: z.number().describe("The spec index to contest"),
-    evidenceURI: z.string().describe("URI pointing to evidence + statement supporting the contest"),
+  repnet_accept_more_work: z.object({ jobId: z.number() }),
+  repnet_refuse_more_work: z.object({
+    jobId: z.number(),
+    reason: z.string().describe("Worker refusal reason recorded on-chain"),
   }),
-  repnet_submit_evidence: z.object({
-    jobId: z.number().describe("The escrow job ID"),
-    specIndex: z.number().describe("The contested spec index"),
-    evidenceURI: z.string().describe("URI pointing to evidence + statement"),
+  repnet_release: z.object({ jobId: z.number() }),
+  repnet_cancel: z.object({
+    jobId: z.number(),
+    reason: z.string(),
+    stage: z.enum(["before-delivery", "after-review"]).optional(),
   }),
-  repnet_preview_escrow: z.object({
-    amount: z.number().describe("Total USDC amount for the escrow"),
-    specCount: z.number().describe("Number of spec items"),
-  }),
+  repnet_job_status: z.object({ jobId: z.number() }),
 } as const;
 
 export type RepNetVercelToolName = keyof typeof repnetActionSchemas;

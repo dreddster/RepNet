@@ -1,6 +1,6 @@
 {
   "name": "@repnet/cli",
-  "version": "0.1.2",
+  "version": "0.1.7",
   "description": "RepNet CLI — manage AI agent reputation from the command line. Register, pay, query, review.",
   "bin": {
     "repnet": "dist/cli.js"
@@ -25,7 +25,7 @@
   "homepage": "https://repnet.wittymermaid.com",
   "author": "RepNet Protocol",
   "dependencies": {
-    "@repnet/sdk": "^0.1.2",
+    "@repnet/sdk": "^0.1.7",
     "ethers": "^6.13.0"
   },
   "devDependencies": {

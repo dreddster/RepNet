@@ -173,8 +173,8 @@ function dkgConfigFromEnv() {
   if (!apiUrl) return undefined;
 
   return {
-    mode: "v10-node" as const,
-    v10: {
+    mode: "node" as const,
+    memory: {
       apiUrl,
       contextGraphId: process.env.REPNET_DKG_CONTEXT_GRAPH_ID,
       authToken: process.env.REPNET_DKG_AUTH_TOKEN,
@@ -950,7 +950,6 @@ async function step7Complete(config: OnboardConfig): Promise<void> {
   console.log("  repnet status          Show your registration & reputation");
   console.log("  repnet lookup <addr>   Look up another agent");
   console.log("  repnet stats           Protocol-wide statistics");
-  console.log("  repnet pay <addr> <$>  Pay a worker through RepNet");
   console.log();
 }
 

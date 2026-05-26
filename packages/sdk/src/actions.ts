@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
-import type { PublishAgreementDKGParams, RepNetAgentProfile } from "./dkg/assets";
-import type { DkgPublishResult } from "./dkg/types";
+import type { RepNetAgentProfile } from "./dkg/assets";
 import type { SubmitJobFeedbackParams, SubmitJobFeedbackResult } from "./modules/feedback";
 
 export type RepNetJsonSchema = {
@@ -69,7 +68,17 @@ type RepNetActionClient = {
   };
   dkg?: {
     publishAgentProfile?(profile: RepNetAgentProfile): Promise<string>;
-    publishAgreementV10?(params: PublishAgreementDKGParams): Promise<DkgPublishResult>;
+    queryReputationEvidence?(identityOrWallet: string, opts?: {
+      role?: "contractor" | "worker";
+      filters?: {
+        skills?: string[];
+        domains?: string[];
+        frameworks?: string[];
+        text?: string[];
+      };
+      limit?: number;
+    }): Promise<Record<string, unknown>>;
+    queryReputationJob?(jobId: string): Promise<Array<Record<string, unknown>>>;
     queryWorkerFeedbackEvidence?(wallet: string, jobSpec: Record<string, unknown>): Promise<Array<{
       jobId?: string | number;
       satisfied?: boolean;
@@ -80,41 +89,47 @@ type RepNetActionClient = {
     }>>;
   };
   discovery: { getTotalAgents(): Promise<bigint | number | string> };
-  escrow: {
-    create(params: {
-      worker: string;
-      jobAmount: bigint;
-      agreementHash: string;
-      specWeights: number[];
-      deliveryDeadline: number;
-      reviewPeriod: number;
-      collateralBps?: number;
-    }): Promise<{ jobId: bigint | number | string; receipt: { hash: string } }>;
+  gatewayUrl?: string;
+  jobs?: {
+    createJobBoardJob(params: {
+      contractor: string;
+      jobPostingSignature: string;
+      title: string;
+      publicSpec: Record<string, unknown>;
+      privateSpec: Record<string, unknown>;
+      budget: string;
+      paymentMode: "UPFRONT" | "REVIEW_GATED_DELIVERY_HOLD";
+      applicationDeadline: string;
+      deliveryDeadline: string;
+      reviewDeadline: string;
+    }): Promise<any>;
+    applyToJobBoardJob(params: { jobId: string; applicant: string; applicationSignature: string; ercIdentity?: string; profileRef: string; skills?: string[]; frameworks?: string[]; tools?: string[]; publicSummary: string; proposal?: string; priorWork?: string[]; privateProposal?: string }): Promise<any>;
+    selectJobBoardWorker(params: { jobId: string; contractor: string; worker: string; chainTxHash: string; chainBlockNumber: number; chainJobId?: string }): Promise<any>;
+    getJobBoardJob(jobId: string): Promise<any>;
+    readJobBoardPrivateSpecs(params: { jobId: string; worker: string; timestamp: string; readSignature: string }): Promise<any>;
+    listOpenJobBoardJobs(): Promise<any[]>;
+    createUpfrontJob(params: { worker: string; amount: bigint; agreementHash: string; publicSpecHash: string; privateSpecHash: string; deliveryDeadline: bigint; reviewDeadline: bigint }): Promise<{ jobId: bigint | number | string; hash: string }>;
+    createReviewHoldJob(params: { worker: string; amount: bigint; agreementHash: string; publicSpecHash: string; privateSpecHash: string; deliveryDeadline: bigint; reviewDeadline: bigint }): Promise<{ jobId: bigint | number | string; hash: string }>;
     acceptJob(jobId: bigint): Promise<{ hash: string }>;
-    deliverWork(jobId: bigint, deliveryURI: string): Promise<{ hash: string }>;
-    reviewSpecs(jobId: bigint, results: boolean[]): Promise<{ hash: string }>;
-    acceptFail(jobId: bigint, specIndex: number): Promise<{ hash: string }>;
-    contestSpec(jobId: bigint, specIndex: number, evidenceURI: string): Promise<{ hash: string }>;
-    submitEvidence(jobId: bigint, specIndex: number, evidenceURI: string): Promise<{ hash: string }>;
-    preview(amount: bigint, specCount: number): Promise<{
-      workerReceivesFull: bigint;
-      feePerSide: bigint;
-      totalFee: bigint;
-      disputeFeePerSpec: bigint;
-    }>;
+    declineBeforeAccept(jobId: bigint): Promise<{ hash: string }>;
+    refundBeforeAccept(jobId: bigint): Promise<{ hash: string }>;
+    preparePrivateDelivery(params: { jobId: bigint; payload: string; worker: string; contentType?: string }): Promise<{ deliveryHandle: string; deliveryContentHash?: string; payloadBytes?: number }>;
+    submitDelivery(jobId: bigint, deliveryHandle: string): Promise<{ hash: string }>;
+    requestMoreWork(jobId: bigint, request: string, deadline: bigint): Promise<{ hash: string }>;
+    acceptMoreWork(jobId: bigint): Promise<{ hash: string }>;
+    refuseMoreWork(jobId: bigint, reason: string): Promise<{ hash: string }>;
+    release(jobId: bigint): Promise<{ hash: string }>;
+    cancel(jobId: bigint, reason: string, stage?: "before-delivery" | "after-review"): Promise<{ hash: string }>;
     getJob(jobId: bigint): Promise<{
       contractor: string;
       worker: string;
-      totalAmount: bigint;
+      amount: bigint;
+      paymentMode: number;
       status: number;
-      specCount?: bigint | number | string;
-      deliveryDeadline?: bigint | number | string;
-      amountSettled?: bigint;
-      amountReleased: bigint;
-      amountRefunded: bigint;
-      disputeFeesCollected: bigint;
+      deliveryHandle: string;
+      opinionHash: string;
+      cancellationReason: string;
     }>;
-    getSpecStatuses(jobId: bigint): Promise<number[]>;
   };
 };
 
@@ -144,33 +159,108 @@ const agentIdFromRegistrationReceipt = (receipt: { logs?: Array<{ topics: readon
   return undefined;
 };
 
-const toCount = (value: number | bigint | string | undefined): number => Number(value ?? 0);
-const normalizeList = (value: unknown): string[] => Array.isArray(value)
-  ? value.map(String).map((item) => item.toLowerCase()).filter(Boolean)
-  : value ? [String(value).toLowerCase()] : [];
+const requireJobs = (client: RepNetActionClient) => {
+  if (!client.jobs) throw new Error("RepNet jobs module is not configured in this client.");
+  return client.jobs;
+};
+const resolvePublisherUrl = (client: RepNetActionClient, explicit?: unknown): string => {
+  const env = ((globalThis as any).process?.env || {}) as Record<string, string | undefined>;
+  const publisherUrl = explicit ? String(explicit) : env.REPNET_PUBLISHER_URL || client.gatewayUrl || env.REPNET_GATEWAY_URL;
+  if (!publisherUrl) throw new Error("Missing RepNet publisher URL. Set REPNET_PUBLISHER_URL or REPNET_GATEWAY_URL.");
+  return publisherUrl;
+};
+const jobIdArg = (jobId: unknown): bigint => BigInt(String(jobId));
+const jobBoardIdArg = (jobId: unknown): string => String(jobId);
 
-const jobSpecSignals = (jobSpec: Record<string, unknown>): string[] => Array.from(new Set([
-  ...normalizeList(jobSpec.category),
-  ...normalizeList(jobSpec.workType),
-  ...normalizeList(jobSpec.languages),
-  ...normalizeList(jobSpec.frameworks),
-  ...normalizeList(jobSpec.domains),
-  ...normalizeList(jobSpec.deliverableType),
-]));
-
-const evidenceSignals = (metadata: Record<string, unknown> | undefined): string[] => metadata ? jobSpecSignals(metadata) : [];
-
-const matchedSignals = (jobSpec: Record<string, unknown>, metadata: Record<string, unknown> | undefined): string[] => {
-  const wanted = new Set(jobSpecSignals(jobSpec));
-  return evidenceSignals(metadata).filter((signal) => wanted.has(signal));
+const formatMaybeList = (value: unknown): string | undefined => {
+  if (Array.isArray(value)) return value.map((item) => `- ${String(item)}`).join("\n");
+  if (typeof value === "string" && value.trim()) return value;
+  return undefined;
 };
 
-const fitLabel = (registered: boolean, evidenceMatchCount: number, totalReviews: number): "strong" | "moderate" | "weak" | "unknown" => {
-  if (!registered) return "unknown";
-  if (evidenceMatchCount >= 4) return "strong";
-  if (evidenceMatchCount >= 2) return "moderate";
-  if (totalReviews > 0) return "weak";
-  return "unknown";
+const publicSpecValue = (job: any, ...keys: string[]): unknown => {
+  for (const key of keys) {
+    const value = job.publicSpec?.[key];
+    if (value !== undefined && value !== null) return value;
+  }
+  return undefined;
+};
+
+const formatJobBoardDiscoveryJob = (job: any): string => [
+  `Job-board job ${job.jobId}`,
+  job.title ? `Title: ${job.title}` : undefined,
+  job.budget ? `Budget: ${job.budget}` : undefined,
+  job.paymentMode ? `Mode: ${job.paymentMode}` : undefined,
+  job.contractor ? `Contractor: ${job.contractor}` : undefined,
+  job.contractorAgentId ? `Contractor ERC identity: ${job.contractorAgentId}` : undefined,
+  job.contractorReputationEventCount !== undefined ? `Contractor reputation events: ${job.contractorReputationEventCount}` : undefined,
+  job.applicationDeadline ? `Application deadline: ${job.applicationDeadline}` : undefined,
+  job.deliveryDeadline ? `Delivery deadline: ${job.deliveryDeadline}` : undefined,
+  job.applicationCount !== undefined ? `Applications: ${job.applicationCount}` : undefined,
+  job.status ? `Status: ${job.status}` : undefined,
+].filter(Boolean).join("\n");
+
+const formatJobBoardApplication = (application: any): string => {
+  const skills = formatMaybeList(application.skills);
+  const frameworks = formatMaybeList(application.frameworks);
+  const tools = formatMaybeList(application.tools);
+  const priorWork = formatMaybeList(application.priorWork);
+  return [
+    `Application from ${application.applicant}`,
+    application.ercIdentity ? `ERC identity: ${application.ercIdentity}` : undefined,
+    application.profileRef ? `Profile: ${application.profileRef}` : undefined,
+    skills ? `Skills:\n${skills}` : undefined,
+    frameworks ? `Frameworks:\n${frameworks}` : undefined,
+    tools ? `Tools:\n${tools}` : undefined,
+    application.publicSummary ? `Summary: ${application.publicSummary}` : undefined,
+    application.proposal ? `Proposal: ${application.proposal}` : undefined,
+    priorWork ? `Relevant prior work:\n${priorWork}` : undefined,
+    application.privateProposalHash ? `Private proposal hash: ${application.privateProposalHash}` : undefined,
+  ].filter(Boolean).join("\n");
+};
+
+const formatJobBoardPrivateSpecs = (read: any): string => [
+  `Private specs unlocked for RepNet job-board job ${read.jobId}`,
+  read.worker ? `Worker: ${read.worker}` : undefined,
+  read.privateSpecHash ? `Private spec hash: ${read.privateSpecHash}` : undefined,
+  read.verification?.signer ? `Signed by: ${read.verification.signer}` : undefined,
+  read.verification?.selectedWorker ? `Selected worker: ${read.verification.selectedWorker}` : undefined,
+  read.verification?.status ? `Verified job state: ${read.verification.status}` : undefined,
+  "Private specs:",
+  JSON.stringify(read.privateSpec ?? {}, null, 2),
+].filter(Boolean).join("\n");
+
+const formatJobBoardDetailJob = (job: any): string => {
+  const deliverables = formatMaybeList(publicSpecValue(job, "deliverables", "deliverable", "expectedDeliverables"));
+  const acceptanceCriteria = formatMaybeList(publicSpecValue(job, "acceptanceCriteria", "criteria"));
+  const publicConstraints = formatMaybeList(publicSpecValue(job, "publicConstraints", "constraints", "nonGoals", "non-goals"));
+  const evaluationBasis = publicSpecValue(job, "evaluationBasis", "llmEvaluationBasis", "reviewRubric", "reviewCriteria");
+
+  return [
+    `Job-board job ${job.jobId}`,
+    job.title ? `Title: ${job.title}` : undefined,
+    job.status ? `Status: ${job.status}` : undefined,
+    job.paymentMode ? `Mode: ${job.paymentMode}` : undefined,
+    job.budget ? `Budget: ${job.budget}` : undefined,
+    job.contractor ? `Contractor: ${job.contractor}` : undefined,
+    job.contractorAgentId ? `Contractor ERC identity: ${job.contractorAgentId}` : undefined,
+    job.contractorReputationEventCount !== undefined ? `Contractor reputation events: ${job.contractorReputationEventCount}` : undefined,
+    job.applicationDeadline ? `Application deadline: ${job.applicationDeadline}` : undefined,
+    job.deliveryDeadline ? `Delivery deadline: ${job.deliveryDeadline}` : undefined,
+    job.reviewDeadline ? `Review deadline: ${job.reviewDeadline}` : undefined,
+    job.applicationCount !== undefined ? `Applications: ${job.applicationCount}` : undefined,
+    job.selectedWorker ? `Selected worker: ${job.selectedWorker}` : undefined,
+    job.chainJobId ? `Chain job ID: ${job.chainJobId}` : undefined,
+    job.chainTxHash ? `TX: ${job.chainTxHash}` : undefined,
+    publicSpecValue(job, "description") ? `Description: ${publicSpecValue(job, "description")}` : undefined,
+    deliverables ? `Deliverables:\n${deliverables}` : undefined,
+    acceptanceCriteria ? `Acceptance criteria:\n${acceptanceCriteria}` : undefined,
+    publicConstraints ? `Public constraints:\n${publicConstraints}` : undefined,
+    evaluationBasis ? `Evaluation basis: ${String(evaluationBasis)}` : undefined,
+    Array.isArray(job.applications) && job.applications.length
+      ? `Applications:\n${job.applications.map(formatJobBoardApplication).join("\n\n")}`
+      : undefined,
+  ].filter(Boolean).join("\n");
 };
 
 export function createRepNetActions(client: RepNetActionClient): RepNetActionMap {
@@ -266,148 +356,70 @@ export function createRepNetActions(client: RepNetActionClient): RepNetActionMap
       },
     },
     {
-      name: "repnet_evaluate_workers",
-      description: "Evaluate proposed worker candidates for a job using ERC identity, wallet/agent-id resolution, on-chain reputation summaries, and available public DKG JobFeedback evidence. Returns evidence, not a magic score.",
+      name: "repnet_query_reputation",
+      description: "Query public DKG reputation memory for a wallet or identity across contractor and worker roles. Supports role and skill/text filters and returns summary, highlights, job IDs, and event locators.",
       inputSchema: objectSchema(
         {
-          jobSpec: { type: "object", description: "Public job spec facets to match: category, workType, languages, frameworks, domains, deliverableType" },
-          candidates: { type: "array", items: { type: "object" }, description: "Candidate workers identified by wallet and/or ERC agentId" },
+          identityOrWallet: { type: "string", description: "Wallet address or RepNet identity to query in the public DKG reputation graph" },
+          role: { type: "string", enum: ["contractor", "worker"], description: "Optional role filter: contractor or worker" },
+          skills: { type: "array", items: { type: "string" }, description: "Optional skill/tag filters such as python or coding" },
+          domains: { type: "array", items: { type: "string" }, description: "Optional domain filters" },
+          frameworks: { type: "array", items: { type: "string" }, description: "Optional framework filters such as fastapi" },
+          text: { type: "array", items: { type: "string" }, description: "Optional free-text filters over public summaries/tags" },
+          since: { type: "string", description: "Optional ISO timestamp lower bound over publishedAt/finalActionAt/feedbackWindowClosedAt" },
+          until: { type: "string", description: "Optional ISO timestamp upper bound over publishedAt/finalActionAt/feedbackWindowClosedAt" },
+          terminalPath: { type: "string", description: "Optional terminal path filter such as released, cancelled, withdrawn, expired, or upfront_paid" },
+          counterparty: { type: "string", description: "Optional wallet filter for the other side of the job" },
+          paymentMode: { type: "string", description: "Optional payment mode filter such as REVIEW_GATED_DELIVERY_HOLD or UPFRONT" },
+          jobType: { type: "string", description: "Optional structured job/work type filter when stored on the public event" },
+          amountMin: { type: "string", description: "Optional minimum job amount in base units" },
+          amountMax: { type: "string", description: "Optional maximum job amount in base units" },
+          limit: { type: "number", description: "Maximum public DKG events to return; capped by SDK" },
         },
-        ["jobSpec", "candidates"],
+        ["identityOrWallet"],
       ),
-      execute: async ({ jobSpec, candidates }) => {
-        const spec = (jobSpec || {}) as Record<string, unknown>;
-        const candidateList = Array.isArray(candidates) ? candidates as Array<Record<string, unknown>> : [];
+      execute: async ({ identityOrWallet, role, skills, domains, frameworks, text, since, until, terminalPath, counterparty, paymentMode, jobType, amountMin, amountMax, limit }) => {
+        if (!client.dkg?.queryReputationEvidence) {
+          return "DKG reputation querying is not configured in this client.";
+        }
 
-        const evaluated = await Promise.all(candidateList.map(async (candidate, index) => {
-          const walletInput = candidate.wallet ? String(candidate.wallet) : undefined;
-          const agentIdInput = candidate.agentId !== undefined ? BigInt(String(candidate.agentId)) : undefined;
-
-          const profile = walletInput
-            ? await client.reputation.getByWallet(walletInput)
-            : agentIdInput !== undefined && client.reputation.getById
-              ? await client.reputation.getById(agentIdInput)
-              : null;
-
-          if (!profile) {
-            return {
-              input: candidate,
-              wallet: walletInput,
-              agentId: agentIdInput?.toString(),
-              registered: false,
-              fit: "unknown",
-              matchedSignals: [],
-              evidence: [],
-              summary: { totalReviews: 0, satisfiedCount: 0, satisfactionRate: 0 },
-              risks: ["No registered RepNet ERC identity found for this candidate"],
-              _rank: -1000 + index * -0.001,
-            };
-          }
-
-          const evidence = client.dkg?.queryWorkerFeedbackEvidence
-            ? await client.dkg.queryWorkerFeedbackEvidence(profile.wallet, spec)
-            : [];
-
-          const normalizedEvidence = evidence.map((item) => {
-            const matches = matchedSignals(spec, item.publicJobMetadata);
-            return {
-              jobId: item.jobId !== undefined ? String(item.jobId) : undefined,
-              proofURI: item.proofURI,
-              dkgUal: item.dkgUal,
-              satisfied: item.satisfied,
-              summary: item.summary,
-              matched: matches,
-              publicJobMetadata: item.publicJobMetadata,
-            };
-          });
-
-          const allMatches = Array.from(new Set(normalizedEvidence.flatMap((item) => item.matched)));
-          const totalReviews = toCount(profile.feedback.totalReviews);
-          const satisfiedCount = toCount(profile.feedback.satisfiedCount);
-          const fit = fitLabel(true, allMatches.length, totalReviews);
-          const risks: string[] = [];
-          if (normalizedEvidence.length === 0) risks.push("No matching public DKG JobFeedback evidence returned for this job spec");
-          if (totalReviews === 0) risks.push("No on-chain feedback summary yet");
-          if (profile.feedback.satisfactionRate < 0.75 && totalReviews > 0) risks.push("Satisfaction rate is below 75%; inspect individual evidence before hiring");
-
-          return {
-            input: candidate,
-            wallet: profile.wallet,
-            agentId: String(profile.agentId),
-            agentURI: profile.agentURI,
-            registered: true,
-            fit,
-            matchedSignals: allMatches,
-            evidence: normalizedEvidence,
-            summary: {
-              totalReviews,
-              satisfiedCount,
-              satisfactionRate: profile.feedback.satisfactionRate,
-            },
-            risks,
-            _rank: (allMatches.length * 100) + (satisfiedCount * 5) + profile.feedback.satisfactionRate - index * 0.001,
-          };
-        }));
-
-        const rankedCandidates = evaluated
-          .sort((a, b) => b._rank - a._rank)
-          .map(({ _rank, ...candidate }) => candidate);
-
-        return JSON.stringify({
-          jobSpec: spec,
-          evaluatedAt: new Date(0).toISOString(),
-          rankedCandidates,
-          note: "Evidence-first evaluation. Fit labels are derived from matching public DKG feedback metadata and on-chain reputation summaries; consuming agents should inspect evidence before hiring.",
-        }, null, 2);
-      },
-    },
-    {
-      name: "repnet_preview_payment",
-      description: "Preview fee breakdown for a job payment",
-      inputSchema: objectSchema({ amount: { type: "number", description: "Job amount in USDC" } }, ["amount"]),
-      execute: async ({ amount }) => {
-        const usdcAmount = Number(amount);
-        const p = await client.payment.preview(parseUSDC(usdcAmount));
-        return `Job: $${usdcAmount}\nContractor pays: $${formatUSDC(p.contractorPays)}\nWorker receives: $${formatUSDC(p.workerReceives)}\nFee/side: $${formatUSDC(p.feePerSide)}\nTotal fee: $${formatUSDC(p.totalFee)}`;
-      },
-    },
-    {
-      name: "repnet_pay",
-      description: "Pay a worker via RepNet FeeRouter (USDC on Base)",
-      inputSchema: objectSchema(
-        {
-          worker: { type: "string", description: "Worker wallet address" },
-          amount: { type: "number", description: "Job amount in USDC" },
-        },
-        ["worker", "amount"],
-      ),
-      execute: async ({ worker, amount }) => {
-        const usdcAmount = Number(amount);
-        const receipt = await client.payment.pay(String(worker), parseUSDC(usdcAmount));
-        return `Payment sent! $${usdcAmount} to ${worker}\nTX: ${tx(receipt)}`;
-      },
-    },
-    {
-      name: "repnet_feedback",
-      description: "Submit feedback for an agent after a completed job. Binary satisfaction — no scores.",
-      inputSchema: objectSchema(
-        {
-          targetWallet: { type: "string", description: "Target wallet address to review" },
-          satisfied: { type: "boolean", description: "Satisfied with the work? (true/false)" },
-          category: { type: "string", description: "Job category (e.g., research-synthesis)" },
-          receiptURI: { type: "string", description: "Payment tx / escrow job / verifiable job proof reference available at feedback time" },
-        },
-        ["targetWallet", "satisfied", "category"],
-      ),
-      execute: async ({ targetWallet, satisfied, category, receiptURI }) => {
-        const receipt = await client.feedback.give({
-          targetWallet: String(targetWallet),
-          satisfied: Boolean(satisfied),
-          tag: "job-completed",
-          category: String(category),
-          receiptURI: receiptURI ? String(receiptURI) : "",
+        const filters = {
+          ...(Array.isArray(skills) ? { skills: skills.map(String) } : {}),
+          ...(Array.isArray(domains) ? { domains: domains.map(String) } : {}),
+          ...(Array.isArray(frameworks) ? { frameworks: frameworks.map(String) } : {}),
+          ...(Array.isArray(text) ? { text: text.map(String) } : {}),
+        };
+        const result = await client.dkg.queryReputationEvidence(String(identityOrWallet), {
+          ...(role === "contractor" || role === "worker" ? { role } : {}),
+          ...(Object.keys(filters).length ? { filters } : {}),
+          ...(since ? { since: String(since) } : {}),
+          ...(until ? { until: String(until) } : {}),
+          ...(terminalPath ? { terminalPath: String(terminalPath) } : {}),
+          ...(counterparty ? { counterparty: String(counterparty) } : {}),
+          ...(paymentMode ? { paymentMode: String(paymentMode) } : {}),
+          ...(jobType ? { jobType: String(jobType) } : {}),
+          ...(amountMin !== undefined ? { amountMin: String(amountMin) } : {}),
+          ...(amountMax !== undefined ? { amountMax: String(amountMax) } : {}),
+          ...(limit !== undefined ? { limit: Number(limit) } : {}),
         });
-        return `Feedback submitted to ${targetWallet}! Satisfied: ${satisfied ? "Yes ✅" : "No ❌"}\nTX: ${tx(receipt)}`;
+
+        return JSON.stringify(result, null, 2);
+      },
+    },
+    {
+      name: "repnet_query_reputation_job",
+      description: "Query detailed public DKG reputation events for one job ID returned by repnet_query_reputation.",
+      inputSchema: objectSchema({ jobId: { type: "string", description: "Public RepNet job ID to inspect in DKG reputation memory" } }, ["jobId"]),
+      execute: async ({ jobId }) => {
+        if (!client.dkg?.queryReputationJob) {
+          return "DKG reputation job querying is not configured in this client.";
+        }
+        const events = await client.dkg.queryReputationJob(String(jobId));
+        return JSON.stringify({
+          jobId: String(jobId),
+          eventCount: events.length,
+          events,
+        }, null, 2);
       },
     },
     {
@@ -416,16 +428,15 @@ export function createRepNetActions(client: RepNetActionClient): RepNetActionMap
       inputSchema: objectSchema(
         {
           jobId: { type: "number", description: "Escrow job ID with an open feedback window" },
-          publisherUrl: { type: "string", description: "RepNet publisher API base URL" },
           reviewerRole: { type: "string", enum: ["contractor", "worker"], description: "Your role in this job" },
           satisfied: { type: "boolean", description: "Binary satisfaction signal" },
           summary: { type: "string", description: "Public one-sentence feedback summary (≤500 chars)" },
           tags: { type: "array", items: { type: "string" }, description: "Public searchable feedback tags" },
-          proofURI: { type: "string", description: "Payment tx / escrow job / verifiable job proof available at feedback time" },
+          proofURI: { type: "string", description: "Payment tx / job / verifiable job proof available at feedback time" },
           publicJobMetadata: { type: "object", description: "Contractor→Worker public searchable metadata: category, workType, languages, frameworks, domains, deliverableType, publicJobSummary" },
           contractorFeedback: { type: "object", description: "Worker→Contractor public behavior metadata: requirementsClarity, scopeDiscipline, reviewFairness, responsiveness, paymentPromptness" },
         },
-        ["jobId", "publisherUrl", "reviewerRole", "satisfied", "summary"],
+        ["jobId", "reviewerRole", "satisfied", "summary"],
       ),
       execute: async ({ jobId, publisherUrl, reviewerRole, satisfied, summary, tags, proofURI, publicJobMetadata, contractorFeedback }) => {
         if (!client.feedback.submitJobFeedback) {
@@ -435,7 +446,7 @@ export function createRepNetActions(client: RepNetActionClient): RepNetActionMap
         const role = String(reviewerRole) as "contractor" | "worker";
         const result = await client.feedback.submitJobFeedback({
           jobId: Number(jobId),
-          publisherUrl: String(publisherUrl),
+          publisherUrl: resolvePublisherUrl(client, publisherUrl),
           reviewerRole: role,
           rating: satisfied ? 1 : 0,
           summary: String(summary),
@@ -483,199 +494,221 @@ export function createRepNetActions(client: RepNetActionClient): RepNetActionMap
       },
     },
     {
-      name: "repnet_publish_agreement",
-      description: "Publish a product-native JobAgreement Knowledge Asset to DKG. Use private visibility for escrow/collateral requirements/specs; public metadata remains hash/provenance only.",
-      inputSchema: objectSchema(
-        {
-          jobId: { type: "number", description: "On-chain escrow job ID" },
-          agreementHash: { type: "string", description: "Keccak256 hash anchored on-chain" },
-          description: { type: "string", description: "Human-readable job agreement description" },
-          specs: { type: "array", items: { type: "object" }, description: "Agreement specs with id, description, weight (sum 100)" },
-          worker: { type: "string", description: "Worker wallet" },
-          contractor: { type: "string", description: "Contractor wallet" },
-          amount: { type: "string", description: "USDC amount in 6-decimal base units" },
-          deliveryDeadline: { type: "number", description: "Unix timestamp delivery deadline" },
-          reviewPeriod: { type: "number", description: "Review period in seconds" },
-          specVisibility: { type: "string", enum: ["public", "private"], description: "Whether specs/requirements are public or private on DKG" },
-        },
-        ["jobId", "agreementHash", "description", "specs", "worker", "contractor", "amount", "deliveryDeadline", "reviewPeriod"],
-      ),
-      execute: async ({ jobId, agreementHash, description, specs, worker, contractor, amount, deliveryDeadline, reviewPeriod, specVisibility }) => {
-        if (!client.dkg?.publishAgreementV10) {
-          return "DKG agreement publishing is not configured in this client.";
-        }
-
-        const result = await client.dkg.publishAgreementV10({
-          jobId: BigInt(Number(jobId)),
-          agreementHash: String(agreementHash),
-          specVisibility: (specVisibility === "public" ? "public" : "private"),
-          agreement: {
-            version: "1",
-            description: String(description),
-            specs: specs as any,
-            worker: String(worker),
-            contractor: String(contractor),
-            amount: String(amount),
-            deliveryDeadline: Number(deliveryDeadline),
-            reviewPeriod: Number(reviewPeriod),
-            createdAt: Math.floor(Date.now() / 1000),
-          },
+      name: "repnet_job_board_create",
+      description: "Create an open RepNet job-board job through the gateway before worker selection/funding.",
+      inputSchema: objectSchema({
+        contractor: { type: "string", description: "Contractor wallet address that signed the job posting intent" },
+        jobPostingSignature: { type: "string", description: "EIP-712 JobPostingIntent signature from the contractor wallet" },
+        title: { type: "string" },
+        publicSpec: { type: "object" },
+        privateSpec: { type: "object" },
+        budget: { type: "string", description: "USDC amount in 6-decimal base units" },
+        paymentMode: { type: "string", enum: ["UPFRONT", "REVIEW_GATED_DELIVERY_HOLD"] },
+        applicationDeadline: { type: "string", description: "ISO timestamp" },
+        deliveryDeadline: { type: "string", description: "ISO timestamp" },
+        reviewDeadline: { type: "string", description: "ISO timestamp" },
+      }, ["contractor", "jobPostingSignature", "title", "publicSpec", "privateSpec", "budget", "paymentMode", "applicationDeadline", "deliveryDeadline", "reviewDeadline"]),
+      execute: async ({ contractor, jobPostingSignature, title, publicSpec, privateSpec, budget, paymentMode, applicationDeadline, deliveryDeadline, reviewDeadline }) => {
+        const job = await requireJobs(client).createJobBoardJob({
+          contractor: String(contractor),
+          jobPostingSignature: String(jobPostingSignature),
+          title: String(title),
+          publicSpec: publicSpec as Record<string, unknown>,
+          privateSpec: privateSpec as Record<string, unknown>,
+          budget: String(budget),
+          paymentMode: paymentMode === "UPFRONT" ? "UPFRONT" : "REVIEW_GATED_DELIVERY_HOLD",
+          applicationDeadline: String(applicationDeadline),
+          deliveryDeadline: String(deliveryDeadline),
+          reviewDeadline: String(reviewDeadline),
         });
-
-        return `Agreement published to DKG: ${result.status}\nContext graph: ${result.contextGraphId || "n/a"}${result.receiptUri ? `\nLocator: ${result.receiptUri}` : ""}${result.error ? `\nError: ${result.error.message}` : ""}`;
+        return `Job-board job created: ${job.jobId}\n${formatJobBoardDetailJob(job)}`;
       },
     },
     {
-      name: "repnet_create_escrow",
-      description: "Create a Tier C escrow job with structured agreement. Locks USDC in an isolated per-job vault. Worker must call accept_job to start.",
+      name: "repnet_job_board_apply",
+      description: "Apply to an open RepNet job-board job through the gateway as the worker signer.",
+      inputSchema: objectSchema({ jobId: { type: "string" }, applicant: { type: "string" }, applicationSignature: { type: "string" }, ercIdentity: { type: "string" }, profileRef: { type: "string" }, skills: { type: "array", items: { type: "string" } }, frameworks: { type: "array", items: { type: "string" } }, tools: { type: "array", items: { type: "string" } }, publicSummary: { type: "string" }, proposal: { type: "string" }, priorWork: { type: "array", items: { type: "string" } }, privateProposal: { type: "string" } }, ["jobId", "applicant", "applicationSignature", "profileRef", "publicSummary"]),
+      execute: async ({ jobId, applicant, applicationSignature, ercIdentity, profileRef, skills, frameworks, tools, publicSummary, proposal, priorWork, privateProposal }) => {
+        const application = await requireJobs(client).applyToJobBoardJob({
+          jobId: jobBoardIdArg(jobId),
+          applicant: String(applicant),
+          applicationSignature: String(applicationSignature),
+          ...(ercIdentity ? { ercIdentity: String(ercIdentity) } : {}),
+          profileRef: String(profileRef),
+          ...(Array.isArray(skills) ? { skills: skills.map(String) } : {}),
+          ...(Array.isArray(frameworks) ? { frameworks: frameworks.map(String) } : {}),
+          ...(Array.isArray(tools) ? { tools: tools.map(String) } : {}),
+          publicSummary: String(publicSummary),
+          ...(proposal ? { proposal: String(proposal) } : {}),
+          ...(Array.isArray(priorWork) ? { priorWork: priorWork.map(String) } : {}),
+          ...(privateProposal ? { privateProposal: String(privateProposal) } : {}),
+        });
+        return `Application submitted for RepNet job-board job ${application.jobId}.\n${formatJobBoardApplication(application)}`;
+      },
+    },
+    {
+      name: "repnet_job_board_select",
+      description: "Select an applicant for a RepNet job-board job and bridge it into the on-chain job path.",
+      inputSchema: objectSchema({ jobId: { type: "string" }, contractor: { type: "string" }, worker: { type: "string" }, chainTxHash: { type: "string" }, chainBlockNumber: { type: "number" }, chainJobId: { type: "string" } }, ["jobId", "contractor", "worker", "chainTxHash", "chainBlockNumber"]),
+      execute: async ({ jobId, contractor, worker, chainTxHash, chainBlockNumber, chainJobId }) => {
+        const job = await requireJobs(client).selectJobBoardWorker({ jobId: jobBoardIdArg(jobId), contractor: String(contractor), worker: String(worker), chainTxHash: String(chainTxHash), chainBlockNumber: Number(chainBlockNumber), ...(chainJobId ? { chainJobId: String(chainJobId) } : {}) });
+        return `Worker selected for RepNet job-board job ${job.jobId}.\n${formatJobBoardDetailJob(job)}`;
+      },
+    },
+    {
+      name: "repnet_job_board_get",
+      description: "Read a RepNet gateway job-board job by off-chain job-board ID.",
+      inputSchema: objectSchema({ jobId: { type: "string" } }, ["jobId"]),
+      execute: async ({ jobId }) => formatJobBoardDetailJob(await requireJobs(client).getJobBoardJob(jobBoardIdArg(jobId))),
+    },
+    {
+      name: "repnet_job_board_private_specs",
+      description: "Read selected worker private job specs after contractor approval and funded hold.",
+      inputSchema: objectSchema({ jobId: { type: "string" }, worker: { type: "string" }, timestamp: { type: "string" }, readSignature: { type: "string" } }, ["jobId", "worker", "timestamp", "readSignature"]),
+      execute: async ({ jobId, worker, timestamp, readSignature }) => formatJobBoardPrivateSpecs(await requireJobs(client).readJobBoardPrivateSpecs({
+        jobId: jobBoardIdArg(jobId),
+        worker: String(worker),
+        timestamp: String(timestamp),
+        readSignature: String(readSignature),
+      })),
+    },
+    {
+      name: "repnet_job_board_list",
+      description: "List open RepNet gateway job-board jobs.",
+      inputSchema: objectSchema({}),
+      execute: async () => {
+        const jobs = await requireJobs(client).listOpenJobBoardJobs();
+        if (!jobs.length) return "No open RepNet job-board jobs.";
+        return jobs.map(formatJobBoardDiscoveryJob).join("\n\n");
+      },
+    },
+    {
+      name: "repnet_create_upfront_job",
+      description: "Create a RepNet upfront job with immediate payment and feedback rights.",
       inputSchema: objectSchema(
         {
-          worker: { type: "string", description: "Worker wallet address (must be registered)" },
-          amount: { type: "number", description: "Total USDC to deposit" },
-          agreementHash: { type: "string", description: "Keccak256 hash of the job agreement text (hex string)" },
-          specWeights: { type: "array", items: { type: "number" }, description: "Array of spec weights in basis points (must sum to 10000). E.g. [2500, 2500, 2500, 2500] for 4 equal specs" },
-          deadlineDays: { type: "number", description: "Days from now for delivery deadline" },
-          reviewDays: { type: "number", description: "Days contractor has to review after delivery (default: 3)" },
-          collateralBps: { type: "number", description: "Optional collateral in basis points (0 = none, 1500 = 15%). Both parties deposit proportional collateral; loser forfeits." },
+          worker: { type: "string" },
+          amount: { type: "number" },
+          agreementHash: { type: "string" },
+          publicSpecHash: { type: "string" },
+          privateSpecHash: { type: "string" },
+          deliveryDeadline: { type: "number" },
+          reviewDeadline: { type: "number" },
         },
-        ["worker", "amount", "agreementHash", "specWeights", "deadlineDays"],
+        ["worker", "amount", "agreementHash", "publicSpecHash", "privateSpecHash", "deliveryDeadline", "reviewDeadline"]
       ),
-      execute: async ({ worker, amount, agreementHash, specWeights, deadlineDays, reviewDays, collateralBps }) => {
+      execute: async ({ worker, amount, agreementHash, publicSpecHash, privateSpecHash, deliveryDeadline, reviewDeadline }) => {
         const usdcAmount = Number(amount);
-        const weights = specWeights as number[];
-        const days = Number(deadlineDays);
-        const now = Math.floor(Date.now() / 1000);
-        const result = await client.escrow.create({
+        const result = await requireJobs(client).createUpfrontJob({
           worker: String(worker),
-          jobAmount: parseUSDC(usdcAmount),
+          amount: parseUSDC(usdcAmount),
           agreementHash: String(agreementHash),
-          specWeights: weights,
-          deliveryDeadline: now + days * 86400,
-          reviewPeriod: Number(reviewDays || 3) * 86400,
-          collateralBps: collateralBps === undefined ? undefined : Number(collateralBps),
+          publicSpecHash: String(publicSpecHash),
+          privateSpecHash: String(privateSpecHash),
+          deliveryDeadline: BigInt(Number(deliveryDeadline)),
+          reviewDeadline: BigInt(Number(reviewDeadline)),
         });
-        return `Escrow created! Job ID: ${result.jobId}\nWorker: ${worker}\nAmount: $${usdcAmount}\nSpecs: ${weights.length}\nDeadline: ${days} days\nTX: ${tx(result.receipt)}`;
+        return `RepNet upfront job created. Job ID: ${result.jobId}\nWorker: ${worker}\nAmount: $${usdcAmount}\nTX: ${result.hash}`;
+      },
+    },
+    {
+      name: "repnet_create_review_hold_job",
+      description: "Create a RepNet review-hold job funded by the contractor and accepted by the worker before delivery.",
+      inputSchema: objectSchema(
+        {
+          worker: { type: "string" },
+          amount: { type: "number" },
+          agreementHash: { type: "string" },
+          publicSpecHash: { type: "string" },
+          privateSpecHash: { type: "string" },
+          deliveryDeadline: { type: "number" },
+          reviewDeadline: { type: "number" },
+        },
+        ["worker", "amount", "agreementHash", "publicSpecHash", "privateSpecHash", "deliveryDeadline", "reviewDeadline"]
+      ),
+      execute: async ({ worker, amount, agreementHash, publicSpecHash, privateSpecHash, deliveryDeadline, reviewDeadline }) => {
+        const usdcAmount = Number(amount);
+        const result = await requireJobs(client).createReviewHoldJob({
+          worker: String(worker),
+          amount: parseUSDC(usdcAmount),
+          agreementHash: String(agreementHash),
+          publicSpecHash: String(publicSpecHash),
+          privateSpecHash: String(privateSpecHash),
+          deliveryDeadline: BigInt(Number(deliveryDeadline)),
+          reviewDeadline: BigInt(Number(reviewDeadline)),
+        });
+        return `RepNet review-hold job created. Job ID: ${result.jobId}\nWorker: ${worker}\nAmount: $${usdcAmount}\nTX: ${result.hash}`;
       },
     },
     {
       name: "repnet_accept_job",
-      description: "Accept an escrow job as a worker. This is your on-chain signature agreeing to the terms. The delivery deadline clock starts now.",
-      inputSchema: objectSchema({ jobId: { type: "number", description: "The escrow job ID to accept" } }, ["jobId"]),
-      execute: async ({ jobId }) => {
-        const receipt = await client.escrow.acceptJob(BigInt(Number(jobId)));
-        return `Job #${jobId} accepted! Delivery deadline is now active.\nTX: ${tx(receipt)}`;
+      description: "Accept a RepNet review-hold job as the designated worker.",
+      inputSchema: objectSchema({ jobId: { type: "number" } }, ["jobId"]),
+      execute: async ({ jobId }) => `RepNet job #${jobId} accepted.\nTX: ${tx(await requireJobs(client).acceptJob(jobIdArg(jobId)))}`,
+    },
+    {
+      name: "repnet_decline_before_accept",
+      description: "Decline a RepNet review-hold job before accepting; contractor receives a full refund and no feedback rights are recorded.",
+      inputSchema: objectSchema({ jobId: { type: "number" } }, ["jobId"]),
+      execute: async ({ jobId }) => `RepNet job #${jobId} declined before accept.\nTX: ${tx(await requireJobs(client).declineBeforeAccept(jobIdArg(jobId)))}`,
+    },
+    {
+      name: "repnet_refund_before_accept",
+      description: "Refund a RepNet review-hold job after the worker acceptance deadline passes without acceptance.",
+      inputSchema: objectSchema({ jobId: { type: "number" } }, ["jobId"]),
+      execute: async ({ jobId }) => `RepNet job #${jobId} refunded after acceptance timeout.\nTX: ${tx(await requireJobs(client).refundBeforeAccept(jobIdArg(jobId)))}`,
+    },
+    {
+      name: "repnet_submit_private_delivery",
+      description: "Submit private delivery through the RepNet gateway. The gateway stores the payload and writes only an opaque handle on-chain.",
+      inputSchema: objectSchema({ jobId: { type: "number" }, payload: { type: "string" }, contentType: { type: "string" } }, ["jobId", "payload"]),
+      execute: async ({ jobId, payload, contentType }) => {
+        const jobs = requireJobs(client);
+        const worker = await client.getAddress();
+        const prepared = await jobs.preparePrivateDelivery({ jobId: jobIdArg(jobId), payload: String(payload), worker, ...(contentType ? { contentType: String(contentType) } : {}) });
+        const receipt = await jobs.submitDelivery(jobIdArg(jobId), prepared.deliveryHandle);
+        return `Private delivery submitted for RepNet job #${jobId}.\nHandle: ${prepared.deliveryHandle}\nTX: ${receipt.hash}`;
       },
     },
     {
-      name: "repnet_deliver_work",
-      description: "Submit delivery for an escrow job. Must be done before the delivery deadline. The contractor's review period starts after this.",
-      inputSchema: objectSchema(
-        {
-          jobId: { type: "number", description: "The escrow job ID" },
-          deliveryURI: { type: "string", description: "URI pointing to the delivered work (e.g. ipfs://..., https://...)" },
-        },
-        ["jobId", "deliveryURI"],
-      ),
-      execute: async ({ jobId, deliveryURI }) => {
-        const receipt = await client.escrow.deliverWork(BigInt(Number(jobId)), String(deliveryURI));
-        return `Work delivered for job #${jobId}.\nDelivery: ${deliveryURI}\nTX: ${tx(receipt)}\nContractor review period has started.`;
-      },
+      name: "repnet_request_more_work",
+      description: "Request the single allowed additional-work pass after official opinion review with a worker response/resubmission deadline.",
+      inputSchema: objectSchema({ jobId: { type: "number" }, request: { type: "string" }, deadline: { type: "number" } }, ["jobId", "request", "deadline"]),
+      execute: async ({ jobId, request, deadline }) => `Additional work requested for RepNet job #${jobId}.\nTX: ${tx(await requireJobs(client).requestMoreWork(jobIdArg(jobId), String(request), BigInt(Number(deadline))))}`,
     },
     {
-      name: "repnet_review_specs",
-      description: "Review all specs for a delivered job. Mark each spec as Pass (true) or Fail (false). If all pass, worker gets paid immediately. If any fail, worker must respond.",
-      inputSchema: objectSchema(
-        {
-          jobId: { type: "number", description: "The escrow job ID" },
-          results: { type: "array", items: { type: "boolean" }, description: "Array of Pass (true) / Fail (false) for each spec" },
-        },
-        ["jobId", "results"],
-      ),
-      execute: async ({ jobId, results }) => {
-        const specResults = results as boolean[];
-        const receipt = await client.escrow.reviewSpecs(BigInt(Number(jobId)), specResults);
-        const passed = specResults.filter((r) => r).length;
-        const failed = specResults.length - passed;
-        return `Specs reviewed for job #${jobId}.\n${passed} passed, ${failed} failed.${failed > 0 ? " Worker must respond to failed specs." : " All passed — worker payment processing."}\nTX: ${tx(receipt)}`;
-      },
+      name: "repnet_accept_more_work",
+      description: "Accept the contractor's additional-work request as worker.",
+      inputSchema: objectSchema({ jobId: { type: "number" } }, ["jobId"]),
+      execute: async ({ jobId }) => `Additional work accepted for RepNet job #${jobId}.\nTX: ${tx(await requireJobs(client).acceptMoreWork(jobIdArg(jobId)))}`,
     },
     {
-      name: "repnet_accept_fail",
-      description: "Accept a failed spec ruling as the worker. Funds for this spec go back to the contractor. Use when you agree the spec wasn't met.",
-      inputSchema: objectSchema(
-        {
-          jobId: { type: "number", description: "The escrow job ID" },
-          specIndex: { type: "number", description: "The spec index to accept as failed" },
-        },
-        ["jobId", "specIndex"],
-      ),
-      execute: async ({ jobId, specIndex }) => {
-        const receipt = await client.escrow.acceptFail(BigInt(Number(jobId)), Number(specIndex));
-        return `Accepted fail for spec #${specIndex} on job #${jobId}. Funds returned to contractor.\nTX: ${tx(receipt)}`;
-      },
+      name: "repnet_refuse_more_work",
+      description: "Refuse the contractor's additional-work request as worker with a reason.",
+      inputSchema: objectSchema({ jobId: { type: "number" }, reason: { type: "string" } }, ["jobId", "reason"]),
+      execute: async ({ jobId, reason }) => `Additional work refused for RepNet job #${jobId}.\nTX: ${tx(await requireJobs(client).refuseMoreWork(jobIdArg(jobId), String(reason)))}`,
     },
     {
-      name: "repnet_contest_spec",
-      description: "Contest a failed spec — take it to RepNet Court. Three independent LLM judges evaluate evidence and vote. 15% dispute fee applies. Winner gets 85% of the contested amount.",
-      inputSchema: objectSchema(
-        {
-          jobId: { type: "number", description: "The escrow job ID" },
-          specIndex: { type: "number", description: "The spec index to contest" },
-          evidenceURI: { type: "string", description: "URI pointing to evidence + statement supporting the contest" },
-        },
-        ["jobId", "specIndex", "evidenceURI"],
-      ),
-      execute: async ({ jobId, specIndex, evidenceURI }) => {
-        const receipt = await client.escrow.contestSpec(BigInt(Number(jobId)), Number(specIndex), String(evidenceURI));
-        return `Contest filed for spec #${specIndex} on job #${jobId}.\nEvidence: ${evidenceURI}\nCase entered RepNet Court. 3 LLM judges will evaluate. 15% dispute fee applies.\nTX: ${tx(receipt)}`;
-      },
+      name: "repnet_release",
+      description: "Release held funds to the worker after official opinion review or additional-work decision.",
+      inputSchema: objectSchema({ jobId: { type: "number" } }, ["jobId"]),
+      execute: async ({ jobId }) => `RepNet job #${jobId} released.\nTX: ${tx(await requireJobs(client).release(jobIdArg(jobId)))}`,
     },
     {
-      name: "repnet_submit_evidence",
-      description: "Submit evidence for a contested spec. Both parties can submit evidence. Contractor can add counter-evidence after worker files contest.",
-      inputSchema: objectSchema(
-        {
-          jobId: { type: "number", description: "The escrow job ID" },
-          specIndex: { type: "number", description: "The contested spec index" },
-          evidenceURI: { type: "string", description: "URI pointing to evidence + statement" },
-        },
-        ["jobId", "specIndex", "evidenceURI"],
-      ),
-      execute: async ({ jobId, specIndex, evidenceURI }) => {
-        const receipt = await client.escrow.submitEvidence(BigInt(Number(jobId)), Number(specIndex), String(evidenceURI));
-        return `Evidence submitted for spec #${specIndex} on job #${jobId}.\nEvidence: ${evidenceURI}\nTX: ${tx(receipt)}`;
-      },
-    },
-    {
-      name: "repnet_preview_escrow",
-      description: "Preview escrow fees and net amounts before creating a job. Shows fee per side, total fee, and dispute fee per spec.",
-      inputSchema: objectSchema(
-        {
-          amount: { type: "number", description: "Total USDC amount for the escrow" },
-          specCount: { type: "number", description: "Number of spec items" },
-        },
-        ["amount", "specCount"],
-      ),
-      execute: async ({ amount, specCount }) => {
-        const usdcAmount = Number(amount);
-        const count = Number(specCount);
-        const preview = await client.escrow.preview(parseUSDC(usdcAmount), count);
-        return `Escrow preview for $${usdcAmount} with ${count} specs:\nWorker receives (full pass): $${formatUSDC(preview.workerReceivesFull)}\nFee per side: $${formatUSDC(preview.feePerSide)}\nTotal fee (both sides): $${formatUSDC(preview.totalFee)}\nDispute fee per spec (15%): $${formatUSDC(preview.disputeFeePerSpec)}`;
-      },
+      name: "repnet_cancel",
+      description: "Cancel a RepNet review-hold job before delivery or after official opinion review.",
+      inputSchema: objectSchema({ jobId: { type: "number" }, reason: { type: "string" }, stage: { type: "string", enum: ["before-delivery", "after-review"] } }, ["jobId", "reason"]),
+      execute: async ({ jobId, reason, stage }) => `RepNet job #${jobId} cancelled.\nTX: ${tx(await requireJobs(client).cancel(jobIdArg(jobId), String(reason), stage === "before-delivery" ? "before-delivery" : "after-review"))}`,
     },
     {
       name: "repnet_job_status",
-      description: "Check the current status of an escrow job. Shows job state, amounts settled, spec statuses, and vault balance.",
-      inputSchema: objectSchema({ jobId: { type: "number", description: "The escrow job ID to check" } }, ["jobId"]),
+      description: "Read RepNet job-board/review-hold state from the contract.",
+      inputSchema: objectSchema({ jobId: { type: "number" } }, ["jobId"]),
       execute: async ({ jobId }) => {
-        const STATUS_NAMES = ["Created", "Active", "Delivered", "InReview", "Settling", "Completed", "Refunded"];
-        const SPEC_NAMES = ["Pending", "Passed", "Failed", "Accepted", "ExtraWork", "Contested", "Resolved"];
-        const id = BigInt(Number(jobId));
-        const job = await client.escrow.getJob(id);
-        const specStatuses = await client.escrow.getSpecStatuses(id);
-        const status = STATUS_NAMES[job.status] || "Unknown";
-        const specList = specStatuses.map((s: number, i: number) => `  Spec ${i}: ${SPEC_NAMES[s] || "Unknown"}`).join("\n");
-        return `Job #${jobId}: ${status}\nContractor: ${job.contractor}\nWorker: ${job.worker}\nTotal: $${formatUSDC(job.totalAmount)}\nReleased: $${formatUSDC(job.amountReleased)}\nRefunded: $${formatUSDC(job.amountRefunded)}\nDispute fees: $${formatUSDC(job.disputeFeesCollected)}\n\nSpecs:\n${specList}`;
+        const PAYMENT_MODES = ["UPFRONT", "REVIEW_GATED_DELIVERY_HOLD"];
+        const STATUSES = ["Created", "Accepted", "SubmittedForReview", "OpinionPublished", "AdditionalWorkRequested", "AdditionalWorkAccepted", "AdditionalWorkRefused", "ResubmittedForReview", "Released", "CancelledBeforeDelivery", "CancelledAfterReview", "WorkerWithdrawn", "DeclinedBeforeAccept", "ExpiredBeforeAccept", "UpfrontPaid"];
+        const job = await requireJobs(client).getJob(jobIdArg(jobId));
+        return `RepNet job #${jobId}: ${STATUSES[job.status] || "Unknown"}\nMode: ${PAYMENT_MODES[job.paymentMode] || "Unknown"}\nContractor: ${job.contractor}\nWorker: ${job.worker}\nAmount: $${formatUSDC(job.amount)}${job.deliveryHandle ? `\nDelivery handle: ${job.deliveryHandle}` : ""}${job.opinionHash && job.opinionHash !== ethers.ZeroHash ? `\nOpinion hash: ${job.opinionHash}` : ""}${job.cancellationReason ? `\nCancellation reason: ${job.cancellationReason}` : ""}`;
       },
     },
   ];

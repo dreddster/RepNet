@@ -50,7 +50,7 @@ function createRepNetMock(options: { freeTier: boolean } = { freeTier: true }) {
 }
 
 describe("IdentityModule contract API", () => {
-  it("uses current IdentityRegistry paid-registration method names", async () => {
+  it("uses IdentityRegistry paid-registration method names", async () => {
     const { repnet, calls } = createRepNetMock({ freeTier: false });
     const identity = new IdentityModule(repnet as any);
 
@@ -64,7 +64,7 @@ describe("IdentityModule contract API", () => {
     ]);
   });
 
-  it("uses current bulk-registration and stats method names", async () => {
+  it("uses bulk-registration and stats method names", async () => {
     const { repnet, calls } = createRepNetMock();
     const identity = new IdentityModule(repnet as any);
 
@@ -78,7 +78,7 @@ describe("IdentityModule contract API", () => {
     ]);
   });
 
-  it("ships ABI entries for every current registration method the SDK calls", () => {
+  it("ships ABI entries for every registration method the SDK calls", () => {
     const functionNames = new Set(
       IdentityRegistryABI.filter((entry: any) => entry.type === "function").map((entry: any) => entry.name)
     );

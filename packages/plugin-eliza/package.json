@@ -1,6 +1,6 @@
 {
   "name": "@repnet/plugin-eliza",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "RepNet canonical action adapter for ElizaOS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,7 +25,7 @@
     "base"
   ],
   "dependencies": {
-    "@repnet/sdk": "^0.1.1"
+    "@repnet/sdk": "^0.1.7"
   },
   "license": "MIT",
   "devDependencies": {

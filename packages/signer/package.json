@@ -1,6 +1,6 @@
 {
   "name": "@repnet/signer",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "RepNet Signer Sidecar — lightweight signing proxy that keeps your private key on YOUR infrastructure",
   "type": "module",
   "main": "dist/index.js",
@@ -15,7 +15,27 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["repnet", "signer", "sidecar", "agent", "reputation", "web3"],
+  "keywords": [
+    "repnet",
+    "signer",
+    "sidecar",
+    "agent",
+    "reputation",
+    "web3"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dreddster/Rep.git",
+    "directory": "packages/signer"
+  },
+  "homepage": "https://repnet.wittymermaid.com",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "dependencies": {
     "ethers": "^6.13.0",

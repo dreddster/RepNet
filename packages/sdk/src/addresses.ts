@@ -3,8 +3,7 @@ export interface DeploymentAddresses {
   IdentityRegistry: string;
   ReputationRegistry: string;
   RepNetFeeRouter: string;
-  EscrowVault: string;
-  RepNetEscrow: string;
+  RepNetJobBoard: string;
 }
 
 export const ADDRESSES: Record<number, DeploymentAddresses> = {
@@ -14,8 +13,7 @@ export const ADDRESSES: Record<number, DeploymentAddresses> = {
     IdentityRegistry: "0xB6f13878a4d8063bc84d26CdDBaDa3C7BaBC628F",
     ReputationRegistry: "0xd816c3920a6f55da131A609D63C0dEA0359cFec4",
     RepNetFeeRouter: "0xA347B67e0592886Cc42dD095D7E9C1629d7c892a",
-    EscrowVault: "0xBd568ea3ec6564e18d3119591237810A1d86c89b",
-    RepNetEscrow: "0xb8F6Ef08e856fB57616d2D4878ca43897B89CE08",
+    RepNetJobBoard: "0xA28e055390A9206a0E744f36F8A3aa57b977c694",
   },
   // Base Mainnet (future)
   // 8453: { ... }

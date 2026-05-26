@@ -108,125 +108,18 @@ export class AgreementModule {
 
   constructor(private repnet: RepNet) {}
 
-  // ─── Escrow Agreement ───────────────────────────────
+  // ─── Legacy Agreement Entry Point ─────────────────────
 
   /**
-   * Publish a Job Agreement and fund escrow in one step.
+   * Legacy compatibility entry point retained only to fail closed.
    *
-   * 1. Calculates and transfers 2% upfront contractor fee to treasury
-   * 2. Builds a canonical agreement object from specs
-   * 3. Hashes it (keccak256) — stored on-chain for integrity
-   * 4. Creates on-chain escrow with spec weights + USDC deposit
-   * 5. Publishes agreement to DKG (best-effort)
-   *
-   * The full agreement object should be stored off-chain (DKG or IPFS)
-   * for dispute resolution. The on-chain hash proves it hasn't been tampered with.
-   *
-   * @dev Contractor must approve USDC for: jobAmount + upfrontFee (2% of jobAmount).
-   *      The upfront fee is transferred directly to treasury before escrow creation.
-   *      At settlement, only the worker-side fee is collected from the escrow pot.
-   *
-   * @param params Agreement parameters (description, specs, worker, amount, deadline)
-   * @returns Published agreement with jobId, hash, and full agreement object
+   * RepNet publishes job agreements through the DKG module and job-board
+   * lifecycle instead of the removed escrow funding path.
    */
-  async publishAgreement(params: PublishAgreementParams): Promise<PublishedAgreement> {
-    const { description, specs, worker, deliveryDeadline, reviewPeriod, specVisibility = "public" } = params;
-
-    // Validate spec weights sum to 100
-    const totalWeight = specs.reduce((sum, s) => sum + s.weight, 0);
-    if (totalWeight !== 100) {
-      throw new Error(`Spec weights must sum to 100, got ${totalWeight}`);
-    }
-
-    // Parse amount to bigint (6 decimals for USDC)
-    let amount: bigint;
-    if (typeof params.amount === "string") {
-      amount = ethers.parseUnits(params.amount, 6);
-    } else {
-      amount = params.amount;
-    }
-
-    // Calculate 2% upfront contractor fee (escrowFeeBps = 200 = 2%)
-    // Use the FeeRouter's calculateEscrowFee for accurate fee calculation
-    const upfrontFee = await this.repnet.contracts.feeRouter.calculateEscrowFee(amount);
-
-    // Get treasury address from FeeRouter
-    const treasury = await this.repnet.contracts.feeRouter.treasury();
-
-    // Approve USDC for jobAmount + upfrontFee
-    const totalRequired = amount + upfrontFee;
-    const approveTx = await this.repnet.contracts.usdc.approve(
-      this.repnet.addresses.RepNetEscrow,
-      amount
+  async publishAgreement(_params: PublishAgreementParams): Promise<PublishedAgreement> {
+    throw new Error(
+      "Legacy agreement funding is removed from the product path. Use RepNet job-board and DKG agreement flows instead.",
     );
-    await approveTx.wait();
-
-    // Approve upfront fee separately (transfer goes to treasury, not escrow)
-    const approveFeeToRouter = await this.repnet.contracts.usdc.approve(
-      treasury,
-      upfrontFee
-    );
-    await approveFeeToRouter.wait();
-
-    // Transfer upfront contractor fee directly to treasury
-    const feeTx = await this.repnet.contracts.usdc.transfer(treasury, upfrontFee);
-    await feeTx.wait();
-
-    // Build canonical agreement object
-    const agreement = {
-      version: "1",
-      description,
-      specs: specs.map((s) => ({
-        id: s.id,
-        description: s.description,
-        weight: s.weight,
-      })),
-      worker,
-      contractor: await this.repnet.getAddress(),
-      amount: amount.toString(),
-      deliveryDeadline,
-      reviewPeriod: reviewPeriod || 7 * 24 * 60 * 60,
-      createdAt: Math.floor(Date.now() / 1000),
-    };
-
-    // Hash for on-chain storage
-    const agreementJSON = JSON.stringify(agreement, Object.keys(agreement).sort());
-    const agreementHash = ethers.keccak256(ethers.toUtf8Bytes(agreementJSON));
-
-    // Convert spec weights from percentage (0-100) to basis points (0-10000)
-    const specWeights = specs.map((s) => s.weight * 100);
-
-    // Create escrow on-chain (escrow module handles its own approval)
-    const { receipt, jobId } = await this.repnet.escrow.create({
-      worker,
-      jobAmount: amount,
-      agreementHash,
-      specWeights,
-      deliveryDeadline,
-      reviewPeriod: reviewPeriod || 7 * 24 * 60 * 60,
-    });
-
-    // Publish agreement to DKG (best-effort, don't fail if DKG is unavailable)
-    let ual: string | undefined;
-    try {
-      ual = await this.repnet.dkg.publishAgreement({
-        jobId,
-        agreementHash,
-        agreement,
-        specVisibility,
-      });
-    } catch {
-      // DKG publishing failed — escrow is already created, continue without UAL
-      // This can happen if DKG node is unavailable or TRAC balance is insufficient
-    }
-
-    return {
-      jobId,
-      agreementHash,
-      agreement,
-      receipt: receipt!,
-      ual,
-    };
   }
 
   // ─── Platform Hooks ─────────────────────────────────

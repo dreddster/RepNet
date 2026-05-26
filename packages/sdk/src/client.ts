@@ -4,16 +4,16 @@ import {
   IdentityRegistryABI,
   ReputationRegistryABI,
   RepNetFeeRouterABI,
-  RepNetEscrowABI,
+  RepNetJobBoardABI,
   MockUSDCABI,
 } from "./abi";
 import { IdentityModule } from "./modules/identity";
 import { PaymentModule } from "./modules/payment";
 import { ReputationModule } from "./modules/reputation";
-import { EscrowModule } from "./modules/escrow";
 import { FeedbackModule } from "./modules/feedback";
 import { DiscoveryModule } from "./modules/discovery";
 import { AgreementModule } from "./modules/agreement";
+import { JobsModule } from "./modules/jobs";
 import { DKGModule, DKGConfig } from "./modules/dkg";
 
 export interface RepNetConfig {
@@ -52,7 +52,7 @@ export class RepNet {
     reputation: ethers.Contract;
     registration: ethers.Contract;
     feeRouter: ethers.Contract;
-    escrow: ethers.Contract;
+    jobBoardContract: ethers.Contract;
     usdc: ethers.Contract;
   };
 
@@ -60,10 +60,10 @@ export class RepNet {
   public readonly identity: IdentityModule;
   public readonly payment: PaymentModule;
   public readonly reputation: ReputationModule;
-  public readonly escrow: EscrowModule;
   public readonly feedback: FeedbackModule;
   public readonly discovery: DiscoveryModule;
   public readonly agreement: AgreementModule;
+  public readonly jobs: JobsModule;
   public readonly dkg: DKGModule;
 
   constructor(config: RepNetConfig) {
@@ -81,9 +81,30 @@ export class RepNet {
       this.provider = new ethers.JsonRpcProvider(rpc);
     }
 
-    // Addresses: merge custom overrides with built-in
-    const builtIn = getAddresses(config.chainId);
-    this.addresses = { ...builtIn, ...(config.addresses || {}) };
+    // Addresses: merge custom overrides with built-in. For local/staging chains with no
+    // built-in address table, complete overrides are sufficient.
+    let builtIn: Partial<DeploymentAddresses> = {};
+    try {
+      builtIn = getAddresses(config.chainId);
+    } catch (error) {
+      if (!config.addresses) throw error;
+    }
+    const merged = { ...builtIn, ...(config.addresses || {}) } as Partial<DeploymentAddresses>;
+    if (!merged.MockUSDC && (config.addresses as Record<string, string> | undefined)?.USDC) {
+      merged.MockUSDC = (config.addresses as Record<string, string>).USDC;
+    }
+    const requiredAddressKeys: Array<keyof DeploymentAddresses> = [
+      "MockUSDC",
+      "IdentityRegistry",
+      "ReputationRegistry",
+      "RepNetFeeRouter",
+      "RepNetJobBoard",
+    ];
+    const missing = requiredAddressKeys.filter((key) => !merged[key]);
+    if (missing.length > 0) {
+      throw new Error(`RepNet address overrides for chain ${config.chainId} are missing: ${missing.join(", ")}`);
+    }
+    this.addresses = merged as DeploymentAddresses;
 
     // Initialize contract instances
     this.contracts = {
@@ -91,7 +112,7 @@ export class RepNet {
       reputation: new ethers.Contract(this.addresses.ReputationRegistry, ReputationRegistryABI, this.signer),
       registration: new ethers.Contract(this.addresses.IdentityRegistry, IdentityRegistryABI, this.signer),
       feeRouter: new ethers.Contract(this.addresses.RepNetFeeRouter, RepNetFeeRouterABI, this.signer),
-      escrow: new ethers.Contract(this.addresses.RepNetEscrow, RepNetEscrowABI, this.signer),
+      jobBoardContract: new ethers.Contract(this.addresses.RepNetJobBoard, RepNetJobBoardABI, this.signer),
       usdc: new ethers.Contract(this.addresses.MockUSDC, MockUSDCABI, this.signer),
     };
 
@@ -99,10 +120,10 @@ export class RepNet {
     this.identity = new IdentityModule(this);
     this.payment = new PaymentModule(this);
     this.reputation = new ReputationModule(this);
-    this.escrow = new EscrowModule(this);
     this.feedback = new FeedbackModule(this);
     this.discovery = new DiscoveryModule(this);
     this.agreement = new AgreementModule(this);
+    this.jobs = new JobsModule(this);
     this.dkg = new DKGModule(this, config.dkg);
     this.gatewayUrl = config.gatewayUrl;
   }

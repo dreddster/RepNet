@@ -7,12 +7,18 @@ The RepNet API Gateway holds **zero private keys**. When a write operation needs
 ## Quick Start
 
 ```bash
-# Via npx (no install needed)
-npx @repnet/signer --key 0xYOUR_PRIVATE_KEY
+# Contractor sidecar for selecting/funding RepNetJobBoard jobs
+REPNET_SIGNER_KEY=0xYOUR_PRIVATE_KEY repnet-signer \
+  --chain-id 84532 \
+  --allowed-contracts 0xA28e055390A9206a0E744f36F8A3aa57b977c694 \
+  --allowed-ops job.post,job.create.review_hold,job.create.upfront
 
-# Or install globally
-npm install -g @repnet/signer
-repnet-signer --key 0xYOUR_PRIVATE_KEY
+# Worker sidecar for private delivery submission
+REPNET_SIGNER_KEY=0xYOUR_PRIVATE_KEY repnet-signer \
+  --port 4002 \
+  --chain-id 84532 \
+  --allowed-contracts 0xA28e055390A9206a0E744f36F8A3aa57b977c694 \
+  --allowed-ops delivery.submit
 ```
 
 ## How It Works
@@ -52,6 +58,10 @@ Your Infrastructure          RepNet Gateway
 | `--host` | | 127.0.0.1 | Bind address |
 | `--gateway, -g` | | — | Gateway URL to register with |
 | `--allowed-ops` | | all | Comma-separated operation allowlist |
+| `--chain-id` | `REPNET_SIGNER_CHAIN_ID` | — | Expected chain ID; rejects challenges for other chains |
+| `--allowed-contracts` | `REPNET_SIGNER_ALLOWED_CONTRACTS` | — | Comma-separated transaction target allowlist |
+| `--allow-native-value` | `REPNET_SIGNER_ALLOW_NATIVE_VALUE` | false | Allow non-zero native-token transfers |
+| `--allow-raw` | `REPNET_SIGNER_ALLOW_RAW` | false | Allow raw EIP-191 message signing |
 | `--max-age` | | 300 | Max challenge age (seconds) |
 | `--log-level` | | info | debug/info/warn/error |
 
@@ -91,8 +101,8 @@ docker run -p 4001:4001 \
 ```json
 {
   "challengeId": "ch_abc123",
-  "operation": "register",
-  "description": "Register agent 'MyBot' on Base Sepolia",
+  "operation": "delivery.submit",
+  "description": "Submit private delivery for RepNet job 1",
   "message": "0x...",
   "chainId": 84532,
   "createdAt": "2026-03-01T20:00:00Z",

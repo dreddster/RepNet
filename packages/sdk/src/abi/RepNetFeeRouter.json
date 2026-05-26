@@ -61,11 +61,6 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "NotAuthorizedEscrow",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -110,11 +105,6 @@
   },
   {
     "inputs": [],
-    "name": "WorkerPortionExceedsPot",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "ZeroAddress",
     "type": "error"
   },
@@ -122,93 +112,6 @@
     "inputs": [],
     "name": "ZeroAmount",
     "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "escrow",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "authorized",
-        "type": "bool"
-      }
-    ],
-    "name": "EscrowAuthorized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "escrowFeeBps",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "escrowMinFee",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "escrowMaxFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "EscrowFeesUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "jobId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "contractor",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "worker",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "workerAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "contractorRefund",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "totalFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "EscrowSettled",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -415,89 +318,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "authorizedEscrows",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "calculateEscrowFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
       }
     ],
     "name": "calculateFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "escrowFeeBps",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "escrowMaxFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "escrowMinFee",
     "outputs": [
       {
         "internalType": "uint256",
@@ -610,45 +436,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "workerPortion",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalPot",
-        "type": "uint256"
-      }
-    ],
-    "name": "previewEscrow",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "workerReceives",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "contractorRefund",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "feePerSide",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalFee",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "jobAmount",
         "type": "uint256"
       }
@@ -713,47 +500,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "escrow",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "authorized",
-        "type": "bool"
-      }
-    ],
-    "name": "setAuthorizedEscrow",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "newEscrowFeeBps",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newEscrowMinFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newEscrowMaxFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setEscrowFees",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_minFeeBps",
         "type": "uint256"
@@ -812,40 +558,6 @@
     ],
     "name": "setTreasury",
     "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "contractor",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "worker",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalPot",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "workerPortion",
-        "type": "uint256"
-      }
-    ],
-    "name": "settleEscrow",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },

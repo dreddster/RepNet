@@ -37,8 +37,8 @@ describe("RepNetDKGAnchors", function () {
     anchors = await RepNetDKGAnchors.deploy(owner.address);
   });
 
-  it("exposes the v10 suite marker", async function () {
-    expect(await anchors.REPNET_VERSION()).to.equal("v10");
+  it("exposes the suite marker", async function () {
+    expect(await anchors.REPNET_VERSION()).to.equal("release");
   });
 
   it("lets the owner authorize and revoke DKG publishers", async function () {

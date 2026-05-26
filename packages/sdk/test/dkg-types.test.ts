@@ -15,7 +15,7 @@ function acceptPrivateStorageStatus(status: DkgPrivateStorageStatus): DkgPrivate
   return status;
 }
 
-describe("DKG V10 result types", () => {
+describe("DKG result types", () => {
   it("supports explicit publish finality states", () => {
     expect(acceptPublishStatus("confirmed")).toBe("confirmed");
     expect(acceptPublishStatus("tentative")).toBe("tentative");
@@ -44,7 +44,7 @@ describe("DKG V10 result types", () => {
   it("models tentative ACK diagnostics without pretending finality", () => {
     const result: DkgPublishResult = {
       status: "tentative",
-      contextGraphId: "0xbAf8B569786A051b237C9609d6DE685138399811/repnet-dev",
+      contextGraphId: "0x8fb6dcd4B3e07E610958750DbD72Ae4acdce3738/repnet-official",
       kcId: "0",
       publicAnchorStatus: "tentative",
       privateStorageStatus: "none",

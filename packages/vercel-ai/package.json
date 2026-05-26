@@ -1,6 +1,6 @@
 {
   "name": "@repnet/vercel-ai",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "RepNet Vercel AI SDK integration — AI agent reputation tools for any Vercel AI-powered app.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,7 +25,7 @@
   "homepage": "https://repnet.wittymermaid.com",
   "author": "RepNet Protocol",
   "dependencies": {
-    "@repnet/sdk": "^0.1.1",
+    "@repnet/sdk": "^0.1.7",
     "ai": ">=4.0.0",
     "ethers": "^6.13.0",
     "zod": "^3.0.0"

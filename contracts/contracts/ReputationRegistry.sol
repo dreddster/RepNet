@@ -28,14 +28,14 @@ import "./IdentityRegistry.sol";
  *   - feedbackSum replaced with satisfiedCount (factual, not averaged)
  *   - No computed scores — raw data only
  *
- * v2 changes:
+ * changes:
  *   - Running totals instead of unbounded getSummary() loop
  *   - Sender must be a registered agent (prevents spam)
  *   - Self-feedback prevention
  */
 contract ReputationRegistry is ReentrancyGuard, Pausable, Ownable {
     /// @notice RepNet contract suite release identifier.
-    string public constant REPNET_VERSION = "v10";
+    string public constant REPNET_VERSION = "release";
 
     struct AgentIdentity {
         address registry;

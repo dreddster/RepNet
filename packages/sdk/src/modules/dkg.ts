@@ -10,28 +10,33 @@ import {
 } from "../dkg/assets";
 import type { DkgPublishResult } from "../dkg/types";
 import {
-  V10NodeDkgClient,
-  type DkgV10Config,
-  type DkgV10PublishInput,
+  DkgMemoryClient,
+  type DkgReputationEvidenceResult,
+  type DkgReputationEvent,
+  type DkgReputationQueryOptions,
+  type DkgMemoryConfig,
+  type DkgMemoryPublishInput,
   type DkgWorkerFeedbackEvidence,
-} from "../dkg/v10-client";
+} from "../dkg/memory-client";
 
-export type DkgMode = "disabled" | "v10-node";
+export type DkgMode = "disabled" | "node";
 
-interface DkgV10ClientLike {
-  publishPublic(input: DkgV10PublishInput): Promise<DkgPublishResult>;
-  publishPrivate(input: DkgV10PublishInput): Promise<DkgPublishResult>;
+interface DkgMemoryClientLike {
+  publishPublic(input: DkgMemoryPublishInput): Promise<DkgPublishResult>;
+  publishPrivate(input: DkgMemoryPublishInput): Promise<DkgPublishResult>;
   query?(sparql: string, opts?: { contextGraphId?: string; includeSharedMemory?: boolean; view?: string }): Promise<Array<Record<string, unknown>>>;
   queryWorkerFeedbackEvidence?(wallet: string, jobSpec: Record<string, unknown>): Promise<DkgWorkerFeedbackEvidence[]>;
+  queryReputationEvidence?(identityOrWallet: string, opts?: DkgReputationQueryOptions): Promise<DkgReputationEvidenceResult>;
+  queryReputationJob?(jobId: string, opts?: { contextGraphId?: string }): Promise<DkgReputationEvent[]>;
 }
 
 export interface DKGConfig {
   /** Runtime mode. Defaults to disabled unless a DKG node/gateway is explicitly configured. */
   mode: DkgMode;
-  /** DKG node/gateway client config. Used only when mode is v10-node. */
-  v10?: DkgV10Config;
+  /** DKG node/gateway client config. Used only when mode is node. */
+  memory?: DkgMemoryConfig;
   /** Injectable DKG client for tests/custom runtimes. */
-  v10Client?: DkgV10ClientLike;
+  memoryClient?: DkgMemoryClientLike;
   /** Deprecated legacy fields retained only so old config objects do not break TypeScript users. */
   endpoint?: string;
   port?: number;
@@ -43,7 +48,7 @@ export interface DKGConfig {
 }
 
 export class DKGModule {
-  private v10Client?: DkgV10ClientLike;
+  private memoryClient?: DkgMemoryClientLike;
   private config: DKGConfig;
 
   constructor(
@@ -52,8 +57,8 @@ export class DKGModule {
   ) {
     this.config = {
       mode: config?.mode || "disabled",
-      v10: config?.v10,
-      v10Client: config?.v10Client,
+      memory: config?.memory,
+      memoryClient: config?.memoryClient,
       endpoint: config?.endpoint,
       port: config?.port,
       blockchain: config?.blockchain,
@@ -63,8 +68,8 @@ export class DKGModule {
       minimumNumberOfFinalizationConfirmations: config?.minimumNumberOfFinalizationConfirmations,
     };
 
-    if (this.config.mode === "v10-node") {
-      this.v10Client = this.config.v10Client || new V10NodeDkgClient(this.config.v10 || {
+    if (this.config.mode === "node") {
+      this.memoryClient = this.config.memoryClient || new DkgMemoryClient(this.config.memory || {
         apiUrl: "http://127.0.0.1:9200",
       });
     }
@@ -74,15 +79,15 @@ export class DKGModule {
     return this.config.mode;
   }
 
-  async publishPublicV10(input: DkgV10PublishInput): Promise<DkgPublishResult> {
+  async publishPublicMemory(input: DkgMemoryPublishInput): Promise<DkgPublishResult> {
     if (this.config.mode === "disabled") {
       return this.disabledResult(input.contextGraphId);
     }
 
-    if (this.config.mode !== "v10-node" || !this.v10Client) {
+    if (this.config.mode !== "node" || !this.memoryClient) {
       return {
         status: "failed",
-        contextGraphId: input.contextGraphId ?? this.config.v10?.contextGraphId ?? "",
+        contextGraphId: input.contextGraphId ?? this.config.memory?.contextGraphId ?? "",
         error: {
           code: "DKG_NODE_NOT_CONFIGURED",
           message: "DKG module is not configured for node publishing",
@@ -91,18 +96,18 @@ export class DKGModule {
       };
     }
 
-    return this.v10Client.publishPublic(input);
+    return this.memoryClient.publishPublic(input);
   }
 
-  async publishPrivateV10(input: DkgV10PublishInput): Promise<DkgPublishResult> {
+  async publishPrivateMemory(input: DkgMemoryPublishInput): Promise<DkgPublishResult> {
     if (this.config.mode === "disabled") {
       return this.disabledResult(input.contextGraphId);
     }
 
-    if (this.config.mode !== "v10-node" || !this.v10Client) {
+    if (this.config.mode !== "node" || !this.memoryClient) {
       return {
         status: "failed",
-        contextGraphId: input.contextGraphId ?? this.config.v10?.contextGraphId ?? "",
+        contextGraphId: input.contextGraphId ?? this.config.memory?.contextGraphId ?? "",
         error: {
           code: "DKG_NODE_NOT_CONFIGURED",
           message: "DKG module is not configured for node publishing",
@@ -111,24 +116,53 @@ export class DKGModule {
       };
     }
 
-    return this.v10Client.publishPrivate(input);
+    return this.memoryClient.publishPrivate(input);
   }
 
   async queryWorkerFeedbackEvidence(
     wallet: string,
     jobSpec: Record<string, unknown>,
   ): Promise<DkgWorkerFeedbackEvidence[]> {
-    if (this.config.mode !== "v10-node" || !this.v10Client?.queryWorkerFeedbackEvidence) {
+    if (this.config.mode !== "node" || !this.memoryClient?.queryWorkerFeedbackEvidence) {
       return [];
     }
 
-    return this.v10Client.queryWorkerFeedbackEvidence(wallet, jobSpec);
+    return this.memoryClient.queryWorkerFeedbackEvidence(wallet, jobSpec);
+  }
+
+  async queryReputationEvidence(
+    identityOrWallet: string,
+    opts?: DkgReputationQueryOptions,
+  ): Promise<DkgReputationEvidenceResult> {
+    if (this.config.mode !== "node" || !this.memoryClient?.queryReputationEvidence) {
+      return {
+        identityOrWallet,
+        eventCount: 0,
+        highlights: [],
+        jobIds: [],
+        roles: {
+          contractor: { eventCount: 0, highlights: [], jobIds: [] },
+          worker: { eventCount: 0, highlights: [], jobIds: [] },
+        },
+        events: [],
+      };
+    }
+
+    return this.memoryClient.queryReputationEvidence(identityOrWallet, opts);
+  }
+
+  async queryReputationJob(jobId: string): Promise<DkgReputationEvent[]> {
+    if (this.config.mode !== "node" || !this.memoryClient?.queryReputationJob) {
+      return [];
+    }
+
+    return this.memoryClient.queryReputationJob(jobId, { contextGraphId: this.config.memory?.contextGraphId });
   }
 
   private disabledResult(contextGraphId?: string): DkgPublishResult {
     return {
       status: "failed",
-      contextGraphId: contextGraphId ?? this.config.v10?.contextGraphId ?? "",
+      contextGraphId: contextGraphId ?? this.config.memory?.contextGraphId ?? "",
       error: {
         code: "DKG_DISABLED",
         message: "DKG publishing is disabled",
@@ -146,27 +180,27 @@ export class DKGModule {
   }
 
   private async query(sparql: string): Promise<Array<Record<string, unknown>>> {
-    if (this.config.mode !== "v10-node" || !this.v10Client?.query) {
+    if (this.config.mode !== "node" || !this.memoryClient?.query) {
       return [];
     }
 
-    return this.v10Client.query(sparql, { contextGraphId: this.config.v10?.contextGraphId });
+    return this.memoryClient.query(sparql, { contextGraphId: this.config.memory?.contextGraphId });
   }
 
   /**
    * Legacy standalone client initialization is intentionally unsupported in public v1.
-   * Configure `mode: "v10-node"` with a DKG node/gateway instead.
+   * Configure `mode: "node"` with a DKG node/gateway instead.
    */
   async connect(): Promise<void> {
-    if (this.config.mode === "v10-node") return;
-    throw new Error("Legacy dkg.js client mode was removed; configure DKG mode v10-node with a node/gateway API URL.");
+    if (this.config.mode === "node") return;
+    throw new Error("Legacy dkg.js client mode was removed; configure DKG mode node with a node/gateway API URL.");
   }
 
   /**
    * Check if the configured DKG node/gateway is reachable.
    */
   async isNodeAvailable(): Promise<boolean> {
-    const apiUrl = this.config.v10?.apiUrl;
+    const apiUrl = this.config.memory?.apiUrl;
     if (!apiUrl) return false;
 
     try {
@@ -181,7 +215,7 @@ export class DKGModule {
    * Get configured DKG node/gateway info.
    */
   async getNodeInfo(): Promise<any> {
-    const apiUrl = this.config.v10?.apiUrl;
+    const apiUrl = this.config.memory?.apiUrl;
     if (!apiUrl) throw new Error("DKG node/gateway API URL is not configured");
 
     const response = await fetch(`${apiUrl.replace(/\/$/, "")}/info`);
@@ -193,9 +227,9 @@ export class DKGModule {
    */
   async publishAgentProfile(profile: RepNetAgentProfile): Promise<string> {
     const asset = buildAgentProfileAsset(profile);
-    const result = await this.publishPublicV10({
+    const result = await this.publishPublicMemory({
       ...asset,
-      contextGraphId: this.config.v10?.contextGraphId,
+      contextGraphId: this.config.memory?.contextGraphId,
     });
 
     return this.requirePublishLocator(result, "DKG agent profile publish");
@@ -214,9 +248,9 @@ export class DKGModule {
    */
   async publishReceipt(receipt: RepNetReceipt): Promise<string> {
     const asset = buildReceiptAsset(receipt);
-    const result = await this.publishPublicV10({
+    const result = await this.publishPublicMemory({
       ...asset,
-      contextGraphId: this.config.v10?.contextGraphId,
+      contextGraphId: this.config.memory?.contextGraphId,
     });
 
     return this.requirePublishLocator(result, "DKG receipt publish");
@@ -348,7 +382,7 @@ export class DKGModule {
    * Publish a Job Agreement to the configured DKG node/gateway.
    */
   async publishAgreement(params: PublishAgreementDKGParams): Promise<string> {
-    const result = await this.publishAgreementV10(params);
+    const result = await this.publishAgreementMemory(params);
     return this.requirePublishLocator(result, "DKG agreement publish");
   }
 
@@ -356,18 +390,18 @@ export class DKGModule {
    * Publish a Job Agreement to a DKG node/gateway as a product-native Knowledge Asset.
    * Private agreements keep specs/requirements in the private assertion and publish only metadata publicly.
    */
-  async publishAgreementV10(params: PublishAgreementDKGParams): Promise<DkgPublishResult> {
+  async publishAgreementMemory(params: PublishAgreementDKGParams): Promise<DkgPublishResult> {
     const asset = buildAgreementAsset(params);
     const input = {
       ...asset,
-      contextGraphId: this.config.v10?.contextGraphId,
+      contextGraphId: this.config.memory?.contextGraphId,
     };
 
     if (params.specVisibility === "private") {
-      return this.publishPrivateV10(input);
+      return this.publishPrivateMemory(input);
     }
 
-    return this.publishPublicV10(input);
+    return this.publishPublicMemory(input);
   }
 
   /**

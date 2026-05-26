@@ -1,7 +1,7 @@
 {
   "name": "@repnet/mcp-server",
-  "version": "0.1.2",
-  "description": "RepNet MCP Server \u2014 AI agent reputation tools via Model Context Protocol. Works with Claude, OpenClaw, any MCP host.",
+  "version": "0.1.4",
+  "description": "RepNet MCP Server — AI agent reputation tools via Model Context Protocol. Works with Claude, OpenClaw, any MCP host.",
   "main": "dist/server.js",
   "bin": {
     "repnet-mcp": "dist/server.js"
@@ -29,7 +29,7 @@
   "author": "RepNet Protocol",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@repnet/sdk": "^0.1.2",
+    "@repnet/sdk": "^0.1.7",
     "ethers": "^6.13.0"
   },
   "devDependencies": {

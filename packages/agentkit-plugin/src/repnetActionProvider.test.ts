@@ -68,18 +68,11 @@ describe("RepNet AgentKit action provider", () => {
   });
 
   it("delegates invocation to the canonical action registry", async () => {
-    const calls: Array<{ worker: string; amount: bigint }> = [];
     const client = createShapeOnlyClient();
-    client.payment.pay = async (worker: string, amount: bigint) => {
-      calls.push({ worker, amount });
-      return { hash: "0xpaid" };
-    };
-
     const provider = repnetActionProvider({ client });
-    const pay = provider.getActions({} as any).find((action) => action.name === "repnet_pay");
+    const status = provider.getActions({} as any).find((action) => action.name === "repnet_status");
 
-    await expect(pay?.invoke({ worker: "0xworker", amount: 12.5 })).resolves.toContain("0xpaid");
-    expect(calls).toEqual([{ worker: "0xworker", amount: 12_500_000n }]);
+    await expect(status?.invoke({})).resolves.toContain("Wallet: 0xabc");
   });
 
   it("does not reintroduce direct ABI/protocol execution logic", () => {

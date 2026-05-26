@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import { ethers } from "ethers";
-import { RepNet, createRepNetActions } from "@repnet/sdk";
+import { RepNet, REPNET_OFFICIAL_CONTEXT_GRAPH_ID, createRepNetActions } from "@repnet/sdk";
 import { runOnboarding } from "./onboard";
 import * as fs from "fs";
 import * as path from "path";
+import { createHash } from "crypto";
 
 const CONFIG_PATH = path.join(
   process.env.HOME || "~",
@@ -16,6 +17,7 @@ interface CLIConfig {
   chainId: number;
   privateKey?: string;
   rpcUrl?: string;
+  addresses?: Record<string, string>;
 }
 
 function loadConfig(): CLIConfig {
@@ -44,18 +46,25 @@ function getClient(config: CLIConfig): RepNet {
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   const signer = new ethers.Wallet(config.privateKey, provider);
   const dkgApiUrl = process.env.REPNET_DKG_API_URL;
+  const gatewayUrl = process.env.REPNET_GATEWAY_URL;
+  const addresses = {
+    ...(config.addresses || {}),
+    ...(process.env.REPNET_JOB_BOARD_ADDRESS ? { RepNetJobBoard: process.env.REPNET_JOB_BOARD_ADDRESS } : {}),
+  };
 
   return new RepNet({
     chainId: config.chainId,
     signer,
     provider,
+    addresses,
+    ...(gatewayUrl ? { gatewayUrl } : {}),
     ...(dkgApiUrl ? {
       dkg: {
-        mode: "v10-node" as const,
-        v10: {
+        mode: "node" as const,
+        memory: {
           apiUrl: dkgApiUrl,
           authToken: process.env.REPNET_DKG_AUTH_TOKEN,
-          contextGraphId: process.env.REPNET_DKG_CONTEXT_GRAPH_ID,
+          contextGraphId: process.env.REPNET_DKG_CONTEXT_GRAPH_ID || REPNET_OFFICIAL_CONTEXT_GRAPH_ID,
           publishRoute: process.env.REPNET_DKG_PUBLISH_ROUTE,
           queryRoute: process.env.REPNET_DKG_QUERY_ROUTE,
         },
@@ -66,6 +75,293 @@ function getClient(config: CLIConfig): RepNet {
 
 function getActions(config: CLIConfig) {
   return createRepNetActions(getClient(config) as any);
+}
+
+
+function stableJson(value: unknown): string {
+  return JSON.stringify(value, (_key, entry) => {
+    if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+      return Object.keys(entry as Record<string, unknown>).sort().reduce<Record<string, unknown>>((acc, key) => {
+        acc[key] = (entry as Record<string, unknown>)[key];
+        return acc;
+      }, {});
+    }
+    return entry;
+  });
+}
+
+function sha256(value: unknown): string {
+  return `sha256:${createHash("sha256").update(typeof value === "string" ? value : stableJson(value)).digest("hex")}`;
+}
+
+type SigningTranscript = {
+  actor: string;
+  operation: string;
+  challenge?: string;
+  summary: string;
+  signature?: string;
+  txHash?: string;
+  gatewayVerification?: string;
+};
+
+function fingerprint(value: string): string {
+  return sha256(value).replace("sha256:", "sha256:").slice(0, "sha256:".length + 16);
+}
+
+function printSigningTranscript(input: SigningTranscript) {
+  const lines = [
+    "Signing transcript:",
+    `- Actor wallet: ${input.actor}`,
+    `- Operation: ${input.operation}`,
+    input.challenge ? `- Challenge: ${input.challenge}` : undefined,
+    `- Message summary: ${input.summary}`,
+    input.signature ? `- Signature fingerprint: ${fingerprint(input.signature)}` : undefined,
+    input.txHash ? `- Transaction hash: ${input.txHash}` : undefined,
+    input.gatewayVerification ? `- Gateway verification: ${input.gatewayVerification}` : undefined,
+  ].filter(Boolean).join("\n");
+  console.log(lines);
+}
+
+function buildJobPostingTypedData(input: {
+  chainId: number;
+  contractor: string;
+  title: string;
+  publicSpecHash: string;
+  privateSpecHash: string;
+  budget: string;
+  paymentMode: string;
+  applicationDeadline: string;
+  deliveryDeadline: string;
+  reviewDeadline: string;
+}) {
+  return {
+    domain: { name: "RepNet Job Board", version: "1", chainId: input.chainId },
+    types: {
+      JobPostingIntent: [
+        { name: "contractor", type: "address" },
+        { name: "title", type: "string" },
+        { name: "publicSpecHash", type: "string" },
+        { name: "privateSpecHash", type: "string" },
+        { name: "budget", type: "string" },
+        { name: "paymentMode", type: "string" },
+        { name: "applicationDeadline", type: "string" },
+        { name: "deliveryDeadline", type: "string" },
+        { name: "reviewDeadline", type: "string" },
+      ],
+    },
+    primaryType: "JobPostingIntent",
+    message: {
+      contractor: input.contractor,
+      title: input.title,
+      publicSpecHash: input.publicSpecHash,
+      privateSpecHash: input.privateSpecHash,
+      budget: input.budget,
+      paymentMode: input.paymentMode,
+      applicationDeadline: input.applicationDeadline,
+      deliveryDeadline: input.deliveryDeadline,
+      reviewDeadline: input.reviewDeadline,
+    },
+  };
+}
+
+async function signJobBoardApplyInput(config: CLIConfig, input: Record<string, unknown>): Promise<Record<string, unknown>> {
+  if ("signerUrl" in input) {
+    throw new Error("job-board-apply no longer accepts signerUrl. The CLI signs the application locally and sends applicant + applicationSignature to the gateway.");
+  }
+  if (!config.privateKey) throw new Error("No wallet configured. Run: repnet setup <private-key>");
+  const required = ["jobId", "profileRef", "publicSummary"];
+  for (const key of required) if (!(key in input)) throw new Error(`Missing job-board apply field: ${key}`);
+  const wallet = new ethers.Wallet(config.privateKey);
+  const applicant = wallet.address;
+  const privateProposal = input.privateProposal ? String(input.privateProposal) : undefined;
+  const typedData = {
+    domain: { name: "RepNet Job Board", version: "1", chainId: config.chainId },
+    types: {
+      JobApplicationIntent: [
+        { name: "applicant", type: "address" },
+        { name: "jobId", type: "string" },
+        { name: "profileRef", type: "string" },
+        { name: "publicSummary", type: "string" },
+        { name: "privateProposalHash", type: "string" },
+      ],
+    },
+    primaryType: "JobApplicationIntent",
+    message: {
+      applicant,
+      jobId: String(input.jobId),
+      profileRef: String(input.profileRef),
+      publicSummary: String(input.publicSummary),
+      privateProposalHash: sha256(privateProposal ?? ""),
+    },
+  };
+  const applicationSignature = await wallet.signTypedData(typedData.domain, typedData.types, typedData.message);
+  printSigningTranscript({
+    actor: applicant,
+    operation: "job.application",
+    challenge: String(input.jobId),
+    summary: `Apply to ${String(input.jobId)} with profile ${String(input.profileRef)} and privateProposalHash ${typedData.message.privateProposalHash}`,
+    signature: applicationSignature,
+    gatewayVerification: "Gateway verifies applicant signature and selected public application fields",
+  });
+  return { applicant, applicationSignature, ...input };
+}
+
+function bytes32FromSha256(value: string): string {
+  if (!value.startsWith("sha256:") || value.length !== "sha256:".length + 64) throw new Error(`Expected sha256-prefixed bytes32 hash, got ${value}`);
+  return `0x${value.slice("sha256:".length)}`;
+}
+
+function isoToUnixSeconds(value: string): bigint {
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) throw new Error(`Expected ISO date-time, got ${value}`);
+  return BigInt(Math.floor(parsed / 1000));
+}
+
+async function fundAndBuildJobBoardSelectInput(config: CLIConfig, input: Record<string, unknown>): Promise<Record<string, unknown>> {
+  if ("signerUrl" in input) {
+    throw new Error("job-board-select no longer accepts signerUrl. The CLI funds/signs locally and sends chain proof to the gateway.");
+  }
+  if (!input.jobId || !input.worker) throw new Error("Missing job-board select fields: jobId and worker");
+  const client = getClient(config);
+  const job = await client.jobs.getJobBoardJob(String(input.jobId));
+  if (!job.budget || !job.publicSpecHash || !job.privateSpecHash || !job.agreementHash || !job.deliveryDeadline || !job.reviewDeadline || !job.paymentMode) {
+    throw new Error("Job-board job is missing funding metadata");
+  }
+  const params = {
+    worker: String(input.worker),
+    amount: BigInt(job.budget),
+    agreementHash: bytes32FromSha256(job.agreementHash),
+    publicSpecHash: bytes32FromSha256(job.publicSpecHash),
+    privateSpecHash: bytes32FromSha256(job.privateSpecHash),
+    deliveryDeadline: isoToUnixSeconds(job.deliveryDeadline),
+    reviewDeadline: isoToUnixSeconds(job.reviewDeadline),
+  };
+  const result = job.paymentMode === "UPFRONT"
+    ? await client.jobs.createUpfrontJob(params)
+    : await client.jobs.createReviewHoldJob(params);
+  printSigningTranscript({
+    actor: await client.signer.getAddress(),
+    operation: `job.select_and_fund.${job.paymentMode}`,
+    challenge: String(input.jobId),
+    summary: `Select worker ${String(input.worker)} and fund hold for job-board job ${String(input.jobId)}`,
+    txHash: result.hash,
+    gatewayVerification: "Gateway records chain proof and selected worker funding metadata",
+  });
+  const receipt = await client.provider.getTransactionReceipt(result.hash);
+  return {
+    contractor: await client.signer.getAddress(),
+    worker: String(input.worker),
+    jobId: String(input.jobId),
+    chainTxHash: result.hash,
+    chainBlockNumber: receipt?.blockNumber ?? 0,
+    chainJobId: result.jobId.toString(),
+  };
+}
+
+
+function deliveryReportMessage(jobId: string): string {
+  return `RepNet delivery report\njobId:${jobId}`;
+}
+
+function deliveryReadMessage(jobId: string, deliveryHandle: string): string {
+  return `RepNet read delivery\njobId:${jobId}\ndeliveryHandle:${deliveryHandle}`;
+}
+
+function jobBoardPrivateSpecsMessage(jobId: string, worker: string, timestamp: string): string {
+  return `RepNet private job details\njobId:${jobId}\nworker:${worker}\ntimestamp:${timestamp}`;
+}
+
+async function signJobBoardPrivateSpecsInput(config: CLIConfig, jobId: string): Promise<Record<string, unknown>> {
+  if (!jobId) throw new Error("Usage: repnet job-board-private-specs <job-board-id>");
+  if (!config.privateKey) throw new Error("No wallet configured. Run: repnet setup <private-key>");
+  const wallet = new ethers.Wallet(config.privateKey);
+  const worker = wallet.address;
+  const timestamp = new Date().toISOString();
+  const readSignature = await wallet.signMessage(jobBoardPrivateSpecsMessage(jobId, worker, timestamp));
+  printSigningTranscript({
+    actor: worker,
+    operation: "job.private_spec_read",
+    challenge: timestamp,
+    summary: `Read private specs for ${jobId}`,
+    signature: readSignature,
+    gatewayVerification: "Gateway verifies selected worker, funded status, and read signature",
+  });
+  return { jobId, worker, timestamp, readSignature };
+}
+
+async function signDeliveryReportIntent(config: CLIConfig, jobId: bigint): Promise<{ contractor: string; reportSignature: string }> {
+  if (!config.privateKey) throw new Error("No wallet configured. Run: repnet setup <private-key>");
+  const wallet = new ethers.Wallet(config.privateKey);
+  const contractor = wallet.address;
+  const reportSignature = await wallet.signMessage(deliveryReportMessage(jobId.toString()));
+  printSigningTranscript({
+    actor: contractor,
+    operation: "delivery.report_request",
+    challenge: jobId.toString(),
+    summary: `Request sanitized delivery report for chain job ${jobId}`,
+    signature: reportSignature,
+    gatewayVerification: "Gateway verifies contractor signature and job role",
+  });
+  return { contractor, reportSignature };
+}
+
+async function signDeliveryReadIntent(config: CLIConfig, jobId: bigint, deliveryHandle: string): Promise<{ contractor: string; readSignature: string }> {
+  if (!config.privateKey) throw new Error("No wallet configured. Run: repnet setup <private-key>");
+  const wallet = new ethers.Wallet(config.privateKey);
+  const contractor = wallet.address;
+  const readSignature = await wallet.signMessage(deliveryReadMessage(jobId.toString(), deliveryHandle));
+  printSigningTranscript({
+    actor: contractor,
+    operation: "delivery.read_released_payload",
+    challenge: deliveryHandle,
+    summary: `Read released delivery for chain job ${jobId}`,
+    signature: readSignature,
+    gatewayVerification: "Gateway verifies contractor signature, release state, and delivery handle",
+  });
+  return { contractor, readSignature };
+}
+
+function parseJobBoardSelectArgs(args: string[]): Record<string, unknown> {
+  const [jobId, worker, ...extra] = args;
+  if (!jobId || !worker || extra.length > 0 || jobId.endsWith(".json") || jobId.trim().startsWith("{")) {
+    throw new Error("Usage: repnet job-board-select <job-board-id> <worker-wallet>");
+  }
+  return { jobId, worker };
+}
+
+async function signJobBoardCreateInput(config: CLIConfig, input: Record<string, unknown>): Promise<Record<string, unknown>> {
+  if ("signerUrl" in input) {
+    throw new Error("job-board-create no longer accepts signerUrl in job JSON. The CLI signs locally and sends contractor + jobPostingSignature to the gateway.");
+  }
+  if (!config.privateKey) throw new Error("No wallet configured. Run: repnet setup <private-key>");
+  const required = ["title", "publicSpec", "privateSpec", "budget", "paymentMode", "applicationDeadline", "deliveryDeadline", "reviewDeadline"];
+  for (const key of required) {
+    if (!(key in input)) throw new Error(`Missing job-board create field: ${key}`);
+  }
+  const wallet = new ethers.Wallet(config.privateKey);
+  const contractor = wallet.address;
+  const typedData = buildJobPostingTypedData({
+    chainId: config.chainId,
+    contractor,
+    title: String(input.title),
+    publicSpecHash: sha256(input.publicSpec),
+    privateSpecHash: sha256(input.privateSpec),
+    budget: String(input.budget),
+    paymentMode: String(input.paymentMode),
+    applicationDeadline: String(input.applicationDeadline),
+    deliveryDeadline: String(input.deliveryDeadline),
+    reviewDeadline: String(input.reviewDeadline),
+  });
+  const jobPostingSignature = await wallet.signTypedData(typedData.domain, typedData.types, typedData.message);
+  printSigningTranscript({
+    actor: contractor,
+    operation: "job.post",
+    challenge: sha256(typedData.message),
+    summary: `Post ${String(input.title)} with publicSpecHash ${typedData.message.publicSpecHash} and privateSpecHash ${typedData.message.privateSpecHash}`,
+    signature: jobPostingSignature,
+    gatewayVerification: "Gateway verifies registered contractor identity and posting signature",
+  });
+  return { contractor, jobPostingSignature, ...input };
 }
 
 function printActionResult(title: string, text: string) {
@@ -94,6 +390,102 @@ function parseJsonArg(value: string | undefined, label: string): Record<string, 
   return parsed as Record<string, unknown>;
 }
 
+function splitList(value: string): string[] {
+  return value.split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function parseOptionArgs(values: string[]): Record<string, string | boolean> {
+  const options: Record<string, string | boolean> = {};
+
+  for (let index = 0; index < values.length; index += 1) {
+    const token = values[index];
+    if (!token?.startsWith("-")) continue;
+
+    const normalized = token.replace(/^-+/, "");
+    const separatorIndex = [normalized.indexOf("="), normalized.indexOf(":")]
+      .filter((item) => item >= 0)
+      .sort((a, b) => a - b)[0];
+
+    let key: string;
+    let value: string | boolean;
+    if (separatorIndex !== undefined) {
+      key = normalized.slice(0, separatorIndex);
+      value = normalized.slice(separatorIndex + 1);
+      if (value === "" && values[index + 1] && !values[index + 1].startsWith("-")) {
+        value = values[index + 1];
+        index += 1;
+      }
+    } else {
+      key = normalized;
+      if (values[index + 1] && !values[index + 1].startsWith("-")) {
+        value = values[index + 1];
+        index += 1;
+      } else {
+        value = true;
+      }
+    }
+
+    options[key.toLowerCase()] = value;
+  }
+
+  return options;
+}
+
+function parseReputationQueryArgs(values: string[]): Record<string, unknown> {
+  if (values.length === 1 && values[0] && !values[0].startsWith("-")) {
+    return parseJsonArg(values[0], "reputation query params");
+  }
+
+  const options = parseOptionArgs(values);
+  const optionValue = (...keys: string[]) => keys.map((key) => options[key]).find((value) => value !== undefined);
+  const positionalIdentity = values.find((item) => item && !item.startsWith("-"));
+  const identity = optionValue("identityorwallet", "identity", "wallet") || positionalIdentity;
+  if (!identity || typeof identity !== "string") {
+    throw new Error("Usage: repnet query-reputation --identity <wallet-or-id> [--role contractor|worker] [--limit 15] [--since ISO] [--until ISO]");
+  }
+
+  const roleValue = optionValue("role");
+  const role = typeof roleValue === "string" ? roleValue.toLowerCase() : undefined;
+  if (role && role !== "contractor" && role !== "worker") {
+    throw new Error("Invalid role: expected contractor or worker");
+  }
+
+  const limit = optionValue("limit", "n");
+  const parsedLimit = typeof limit === "string" ? Number(limit) : undefined;
+  if (limit !== undefined && (!Number.isFinite(parsedLimit) || parsedLimit! <= 0)) {
+    throw new Error("Invalid limit: expected a positive number");
+  }
+
+  const query: Record<string, unknown> = {
+    identityOrWallet: identity,
+    ...(role ? { role } : {}),
+    ...(parsedLimit !== undefined ? { limit: parsedLimit } : {}),
+  };
+
+  for (const key of ["skills", "domains", "frameworks", "text"] as const) {
+    const value = options[key];
+    if (typeof value === "string") query[key] = splitList(value);
+  }
+  for (const key of ["since", "until"] as const) {
+    const value = options[key];
+    if (typeof value === "string") query[key] = value;
+  }
+  const exactOptionMap = {
+    terminalPath: ["terminalpath", "terminal-path"],
+    counterparty: ["counterparty"],
+    paymentMode: ["paymentmode", "payment-mode"],
+    jobType: ["jobtype", "job-type", "worktype", "work-type"],
+    amountMin: ["amountmin", "amount-min"],
+    amountMax: ["amountmax", "amount-max"],
+  } as const;
+  for (const [queryKey, optionKeys] of Object.entries(exactOptionMap)) {
+    const value = optionValue(...optionKeys);
+    if (typeof value === "string") query[queryKey] = value;
+  }
+
+  return query;
+}
+
 function parseBoolean(value: string | undefined, label = "boolean"): boolean {
   const normalized = value?.toLowerCase();
   if (["yes", "true", "satisfied", "pass", "passed", "1"].includes(normalized || "")) return true;
@@ -114,6 +506,177 @@ function parseNumberList(value: string | undefined): number[] {
   const numbers = raw.map((item) => Number(item));
   if (numbers.some((item) => Number.isNaN(item))) throw new Error("Spec weights must be numbers");
   return numbers;
+}
+
+async function getPrivateDeliveryReportLocally(config: CLIConfig, jobIdArg: string | undefined) {
+  if (!jobIdArg) throw new Error("Usage: repnet delivery-report <job-id>");
+  const jobId = BigInt(jobIdArg);
+  const client = getClient(config);
+  const signed = await signDeliveryReportIntent(config, jobId);
+  const result = await client.jobs.getPrivateDeliveryReport({
+    jobId,
+    contractor: signed.contractor,
+    reportSignature: signed.reportSignature,
+  }) as any;
+  printActionResult("RepNet Delivery Report", JSON.stringify(result, null, 2));
+}
+
+async function readPrivateDeliveryLocally(config: CLIConfig, jobIdArg: string | undefined) {
+  if (!jobIdArg) throw new Error("Usage: repnet read-delivery <job-id>");
+  const jobId = BigInt(jobIdArg);
+  const client = getClient(config);
+  const job = await client.jobs.getJob(jobId);
+  const contractor = await client.signer.getAddress();
+  if (String(job.contractor).toLowerCase() !== contractor.toLowerCase()) {
+    throw new Error("Delivery read requires the job contractor wallet");
+  }
+  if (Number(job.status) !== 8) {
+    throw new Error("Delivery is still locked until the job is released");
+  }
+  if (!job.deliveryHandle) {
+    throw new Error("No delivery handle is recorded for this job");
+  }
+  const signed = await signDeliveryReadIntent(config, jobId, job.deliveryHandle);
+  const result = await client.jobs.readPrivateDelivery({
+    jobId,
+    contractor: signed.contractor,
+    deliveryHandle: job.deliveryHandle,
+    readSignature: signed.readSignature,
+  }) as any;
+  const payload = Buffer.from(String(result.payloadBase64 || ""), "base64").toString("utf-8");
+  let renderedPayload = payload;
+  if (String(result.contentType || "").includes("json")) {
+    try {
+      renderedPayload = JSON.stringify(JSON.parse(payload), null, 2);
+    } catch {
+      renderedPayload = payload;
+    }
+  }
+  const artifactLines = Array.isArray(result.artifacts) && result.artifacts.length
+    ? result.artifacts.map((artifact: any, index: number) => `${index + 1}. ${artifact.artifactType}: ${artifact.path}\n   Hash: ${artifact.contentHash}\n   Open: ${artifact.openInstruction}`).join("\n")
+    : "none";
+  printActionResult("RepNet Delivery Unlocked", `Job: ${result.jobId}\nHandle: ${result.deliveryHandle}\nContent-Type: ${result.contentType}\nHash: ${result.resultReference?.deliveryContentHash || "unknown"}\n\nArtifacts:\n${artifactLines}\n\nDelivery:\n${renderedPayload}`);
+}
+
+function normalizeDeliveryAction(input: Record<string, unknown>): "precheck" | "submit" | "abort" {
+  const raw = String(input.deliveryAction ?? input.action ?? "submit").trim().toLowerCase();
+  if (["o", "precheck", "llm-precheck", "llm_precheck"].includes(raw)) return "precheck";
+  if (["s", "submit"].includes(raw)) return "submit";
+  if (["a", "abort", "cancel"].includes(raw)) return "abort";
+  throw new Error("Invalid deliveryAction: expected O/precheck, S/submit, or A/abort");
+}
+
+function deliveryArtifacts(input: Record<string, unknown>): any[] | undefined {
+  return Array.isArray(input.artifacts) ? input.artifacts : undefined;
+}
+
+function printDeliverySubmissionSummary(input: Record<string, unknown>, action: string) {
+  const artifacts = deliveryArtifacts(input) ?? [];
+  const lines = [
+    "Delivery submission summary",
+    `Job: ${String(input.jobId)}`,
+    `Content-Type: ${String(input.contentType ?? "application/octet-stream")}`,
+    `Payload hash: ${sha256(String(input.payload ?? ""))}`,
+    `Artifacts: ${artifacts.length}`,
+    ...artifacts.map((artifact, index) => `  ${index + 1}. ${String(artifact?.artifactType ?? "artifact")} ${String(artifact?.path ?? "")}`),
+    "Options:",
+    "[O] LLM precheck",
+    "[S] Submit",
+    "[A] Abort Submission",
+    `Selected: ${action}`,
+  ];
+  console.log(lines.join("\n"));
+}
+
+async function submitPrivateDeliveryLocally(config: CLIConfig, input: Record<string, unknown>) {
+  if ("signerUrl" in input) {
+    throw new Error("submit-private-delivery no longer accepts signerUrl. The CLI stores the private payload, signs submitDelivery locally, and broadcasts from the worker wallet.");
+  }
+  if (!input.jobId || !input.payload) throw new Error("Missing private delivery fields: jobId and payload");
+  const action = normalizeDeliveryAction(input);
+  printDeliverySubmissionSummary(input, action);
+  if (action === "abort") {
+    printActionResult("RepNet Private Delivery", "DELIVERY_SUBMISSION_ABORTED: no precheck, custody write, or on-chain submission was performed.");
+    return;
+  }
+  if (action === "precheck") {
+    await precheckPrivateDelivery(config, input);
+    return;
+  }
+  const client = getClient(config);
+  const jobId = BigInt(String(input.jobId));
+  const worker = await client.signer.getAddress();
+  const prepared = await client.jobs.preparePrivateDelivery({
+    jobId,
+    worker,
+    payload: String(input.payload),
+    ...(input.contentType ? { contentType: String(input.contentType) } : {}),
+    ...(deliveryArtifacts(input) ? { artifacts: deliveryArtifacts(input) } : {}),
+  }) as any;
+  const receipt = await client.jobs.submitDelivery(jobId, prepared.deliveryHandle);
+  printSigningTranscript({
+    actor: worker,
+    operation: "delivery.submit",
+    challenge: prepared.deliveryHandle,
+    summary: `Submit private delivery for chain job ${jobId}; content hash ${prepared.deliveryContentHash || "pending"}`,
+    txHash: receipt.hash,
+    gatewayVerification: "Gateway prepared custody handle; chain records submitDelivery",
+  });
+  printActionResult("RepNet Private Delivery", `Private delivery submitted for RepNet job #${jobId}.
+Handle: ${prepared.deliveryHandle}
+TX: ${receipt.hash}
+Artifacts: ${(prepared.artifacts ?? []).length}`);
+}
+
+async function resubmitPrivateDeliveryLocally(config: CLIConfig, input: Record<string, unknown>) {
+  if ("signerUrl" in input) {
+    throw new Error("resubmit-private-delivery no longer accepts signerUrl. The CLI stores the private payload, signs resubmitDelivery locally, and broadcasts from the worker wallet.");
+  }
+  if (!input.jobId || !input.payload) throw new Error("Missing private delivery resubmission fields: jobId and payload");
+  const client = getClient(config);
+  const jobId = BigInt(String(input.jobId));
+  const worker = await client.signer.getAddress();
+  const prepared = await client.jobs.preparePrivateDelivery({
+    jobId,
+    worker,
+    payload: String(input.payload),
+    ...(input.contentType ? { contentType: String(input.contentType) } : {}),
+    ...(deliveryArtifacts(input) ? { artifacts: deliveryArtifacts(input) } : {}),
+  }) as any;
+  const receipt = await client.jobs.resubmitDelivery(jobId, prepared.deliveryHandle);
+  printSigningTranscript({
+    actor: worker,
+    operation: "delivery.resubmit",
+    challenge: prepared.deliveryHandle,
+    summary: `Resubmit improved private delivery for chain job ${jobId}; content hash ${prepared.deliveryContentHash || "pending"}`,
+    txHash: receipt.hash,
+    gatewayVerification: "Gateway prepared custody handle; chain records resubmitDelivery",
+  });
+  printActionResult("RepNet Private Delivery Resubmission", `Private delivery resubmitted for RepNet job #${jobId}.
+Handle: ${prepared.deliveryHandle}
+TX: ${receipt.hash}`);
+}
+
+
+async function precheckPrivateDelivery(config: CLIConfig, input: Record<string, unknown>) {
+  if (!input.jobId || !input.payload) throw new Error("Missing delivery precheck fields: jobId and payload");
+  const client = getClient(config);
+  const jobId = BigInt(String(input.jobId));
+  const worker = await client.signer.getAddress();
+  const result = await client.jobs.precheckPrivateDelivery({
+    jobId,
+    worker,
+    payload: String(input.payload),
+    ...(input.contentType ? { contentType: String(input.contentType) } : {}),
+  }) as any;
+  printSigningTranscript({
+    actor: worker,
+    operation: "delivery.precheck",
+    challenge: result.draftContentHash || sha256(String(input.payload)),
+    summary: `Run W-only private precheck for chain job ${jobId}; payload is not submitted as official delivery`,
+    gatewayVerification: "Gateway verifies worker role and stores only precheck metadata",
+  });
+  printActionResult("RepNet Delivery Precheck", JSON.stringify(result, null, 2));
 }
 
 async function executeAction(config: CLIConfig, actionName: string, input: Record<string, unknown>, title: string) {
@@ -137,32 +700,43 @@ Commands:
   status                                       Show wallet & registration status
   register <agent-card-url>                    Register agent identity ($10 USDC or free)
   lookup <wallet-address>                      Look up an agent's reputation
-  evaluate-workers <job-spec-json|file> <candidates-json|file>
-                                               Evaluate worker candidates for a job
-  pay <worker> <amount>                        Direct payment via FeeRouter
-  preview <amount>                             Preview direct-payment fee breakdown
-  feedback <worker> <yes|no> <category> [receipt-uri]
-                                               Leave binary feedback after a completed job
+  query-reputation [flags|params-json|file]    Query public DKG reputation memory by wallet/identity
+  query-reputation-job <job-id>                Query public DKG reputation events for one job
   submit-job-feedback <params-json|file>       Submit role-aware public job feedback
-  publish-agreement <params-json|file>         Publish a DKG-backed JobAgreement
-  escrow-preview <amount> <spec-count>         Preview escrow fees
-  escrow-create <worker> <amount> <agreement-hash> <spec-weights> <deadline-days> [review-days] [collateral-bps]
-                                               Create an escrow job
-  accept-job <job-id>                          Accept an escrow job as worker
-  deliver-work <job-id> <delivery-uri>         Submit work delivery for escrow
-  review-specs <job-id> <true,false,...>       Review delivered specs
-  accept-fail <job-id> <spec-index>            Accept a failed spec ruling
-  contest-spec <job-id> <spec-index> <evidence-uri>
-                                               Contest a failed spec
-  submit-evidence <job-id> <spec-index> <evidence-uri>
-                                               Submit evidence for a contested spec
-  job-status <job-id>                          Show escrow job status
+  job-board-create <params-json|file>          Create an open job-board job via gateway
+  job-board-apply <params-json|file>           Apply to an open job-board job via gateway
+  job-board-select <job-board-id> <worker-wallet>
+                                               Select applicant and fund/create chain job
+  job-board-get <job-board-id>                 Read one job-board job
+  job-board-private-specs <job-board-id>       Worker-signed private spec read after approval/funding
+  job-board-list                               List open job-board jobs
+  upfront-create <params-json|file>            Create upfront job
+  review-hold-create <params-json|file>        Create review-hold job
+  accept-job <job-id>                          Accept review-hold job
+  decline-before-accept <job-id>               Decline job before accepting
+  refund-before-accept <job-id>                Refund expired job before accept
+  delivery-precheck <params-json|file>         Run W's one private delivery precheck
+  submit-private-delivery <params-json|file>   Submit private delivery via gateway
+  resubmit-private-delivery <params-json|file> Resubmit improved private delivery after more-work request
+  delivery-report <job-id>                     Show C-visible sanitized delivery report
+  read-delivery <job-id>                       Read unlocked delivery after C releases payment
+  request-more-work <params-json|file>         Request additional work
+                                               Example: request-more-work {"jobId":2,"request":"tighten the report","deadline":1765172800}
+  accept-more-work <job-id>                    Accept additional work
+  refuse-more-work <params-json|file>          Refuse additional work with reason
+                                               Example: refuse-more-work {"jobId":2,"reason":"deadline is not workable"}
+  release <job-id>                             Release job
+  cancel <params-json|file>                    Cancel job
+  job-status <job-id>                          Show job status
   stats                                        Protocol statistics
   action <repnet_action_name> <params-json|file>
                                                Execute any canonical SDK action directly
   help                                         Show this help
 
 JSON-or-file commands accept either inline JSON or a path to a JSON file.
+Additional-work JSON shapes:
+  request: { jobId, request, deadline }
+  refuse: { jobId, reason }
 Config: ${CONFIG_PATH}
     `);
     return;
@@ -230,67 +804,15 @@ Config: ${CONFIG_PATH}
       break;
     }
 
-    case "pay": {
-      const worker = args[1];
-      const amount = parseFloat(args[2]);
-      if (!worker || isNaN(amount)) {
-        console.error("Usage: repnet pay <worker-address> <usdc-amount>");
-        process.exit(1);
-      }
-      const actions = getActions(config);
-      printActionResult("Payment Preview", await actions.repnet_preview_payment.execute({ amount }));
-      console.log("Routing payment...");
-      printActionResult("Payment", await actions.repnet_pay.execute({ worker, amount }));
+    case "query-reputation": {
+      await executeAction(config, "repnet_query_reputation", parseReputationQueryArgs(args.slice(1)), "DKG Reputation Memory");
       break;
     }
 
-    case "preview": {
-      const amount = parseFloat(args[1]);
-      if (isNaN(amount)) {
-        console.error("Usage: repnet preview <usdc-amount>");
-        process.exit(1);
-      }
-      const text = await getActions(config).repnet_preview_payment.execute({ amount });
-      printActionResult(`Payment Preview ($${amount} job)`, text);
-      break;
-    }
-
-    case "feedback": {
-      const targetWallet = args[1];
-      const satisfiedInput = args[2]?.toLowerCase();
-      const category = args[3];
-      const receiptURI = args[4];
-      const satisfied = satisfiedInput === "yes" || satisfiedInput === "true" || satisfiedInput === "satisfied"
-        ? true
-        : satisfiedInput === "no" || satisfiedInput === "false" || satisfiedInput === "unsatisfied"
-          ? false
-          : undefined;
-
-      if (!targetWallet || satisfied === undefined || !category) {
-        console.error("Usage: repnet feedback <worker-address> <yes|no> <category> [receipt-uri]");
-        process.exit(1);
-      }
-
-      const text = await getActions(config).repnet_feedback.execute({
-        targetWallet,
-        satisfied,
-        category,
-        receiptURI,
-      });
-      printActionResult("Feedback", text);
-      break;
-    }
-
-    case "evaluate-workers": {
-      if (!args[1] || !args[2]) {
-        console.error("Usage: repnet evaluate-workers <job-spec-json|file> <candidates-json|file>");
-        process.exit(1);
-      }
-      const candidatesInput = parseJsonValue(args[2], "candidates");
-      await executeAction(config, "repnet_evaluate_workers", {
-        jobSpec: parseJsonArg(args[1], "job spec"),
-        candidates: Array.isArray(candidatesInput) ? candidatesInput : (candidatesInput as Record<string, unknown>).candidates,
-      }, "Worker Evaluation");
+    case "query-reputation-job": {
+      const jobId = args[1];
+      if (!jobId) throw new Error("Usage: repnet query-reputation-job <job-id>");
+      await executeAction(config, "repnet_query_reputation_job", { jobId }, "DKG Reputation Job Evidence");
       break;
     }
 
@@ -299,111 +821,133 @@ Config: ${CONFIG_PATH}
       break;
     }
 
-    case "publish-agreement": {
-      await executeAction(config, "repnet_publish_agreement", parseJsonArg(args[1], "agreement params"), "DKG Agreement");
+    case "job-board-create": {
+      const input = await signJobBoardCreateInput(config, parseJsonArg(args[1], "job-board create params"));
+      await executeAction(config, "repnet_job_board_create", input, "RepNet Job Board Create");
       break;
     }
 
-    case "escrow-preview": {
-      const amount = Number(args[1]);
-      const specCount = Number(args[2]);
-      if (Number.isNaN(amount) || Number.isNaN(specCount)) {
-        console.error("Usage: repnet escrow-preview <usdc-amount> <spec-count>");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_preview_escrow", { amount, specCount }, "Escrow Preview");
+    case "job-board-apply": {
+      const input = await signJobBoardApplyInput(config, parseJsonArg(args[1], "job-board application params"));
+      await executeAction(config, "repnet_job_board_apply", input, "RepNet Job Board Apply");
       break;
     }
 
-    case "escrow-create": {
-      const worker = args[1];
-      const amount = Number(args[2]);
-      const agreementHash = args[3];
-      const specWeights = parseNumberList(args[4]);
-      const deadlineDays = Number(args[5]);
-      const reviewDays = args[6] === undefined ? undefined : Number(args[6]);
-      const collateralBps = args[7] === undefined ? undefined : Number(args[7]);
-      if (!worker || Number.isNaN(amount) || !agreementHash || Number.isNaN(deadlineDays)) {
-        console.error("Usage: repnet escrow-create <worker> <amount> <agreement-hash> <spec-weights> <deadline-days> [review-days] [collateral-bps]");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_create_escrow", { worker, amount, agreementHash, specWeights, deadlineDays, reviewDays, collateralBps }, "Escrow Created");
+    case "job-board-select": {
+      const input = await fundAndBuildJobBoardSelectInput(config, parseJobBoardSelectArgs(args.slice(1)));
+      await executeAction(config, "repnet_job_board_select", input, "RepNet Job Board Select");
+      break;
+    }
+
+    case "job-board-get": {
+      const jobId = args[1];
+      if (!jobId) throw new Error("Usage: repnet job-board-get <job-board-id>");
+      await executeAction(config, "repnet_job_board_get", { jobId }, "RepNet Job Board Job");
+      break;
+    }
+
+    case "job-board-private-specs": {
+      const input = await signJobBoardPrivateSpecsInput(config, args[1]);
+      await executeAction(config, "repnet_job_board_private_specs", input, "RepNet Job Board Private Specs");
+      break;
+    }
+
+    case "job-board-list": {
+      await executeAction(config, "repnet_job_board_list", {}, "RepNet Job Board Jobs");
+      break;
+    }
+
+
+    case "upfront-create": {
+      await executeAction(config, "repnet_create_upfront_job", parseJsonArg(args[1], "upfront job params"), "RepNet Upfront Job");
+      break;
+    }
+
+    case "review-hold-create": {
+      await executeAction(config, "repnet_create_review_hold_job", parseJsonArg(args[1], "review-hold job params"), "RepNet Review-Hold Job");
       break;
     }
 
     case "accept-job": {
       const jobId = Number(args[1]);
-      if (Number.isNaN(jobId)) {
-        console.error("Usage: repnet accept-job <job-id>");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_accept_job", { jobId }, "Accept Job");
+      if (Number.isNaN(jobId)) throw new Error("Usage: repnet accept-job <job-id>");
+      await executeAction(config, "repnet_accept_job", { jobId }, "RepNet Accept Job");
       break;
     }
 
-    case "deliver-work": {
+    case "decline-before-accept": {
       const jobId = Number(args[1]);
-      const deliveryURI = args[2];
-      if (Number.isNaN(jobId) || !deliveryURI) {
-        console.error("Usage: repnet deliver-work <job-id> <delivery-uri>");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_deliver_work", { jobId, deliveryURI }, "Deliver Work");
+      if (Number.isNaN(jobId)) throw new Error("Usage: repnet decline-before-accept <job-id>");
+      await executeAction(config, "repnet_decline_before_accept", { jobId }, "RepNet Decline Before Accept");
       break;
     }
 
-    case "review-specs": {
+    case "refund-before-accept": {
       const jobId = Number(args[1]);
-      if (Number.isNaN(jobId) || !args[2]) {
-        console.error("Usage: repnet review-specs <job-id> <true,false,...>");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_review_specs", { jobId, results: parseBooleanList(args[2]) }, "Review Specs");
+      if (Number.isNaN(jobId)) throw new Error("Usage: repnet refund-before-accept <job-id>");
+      await executeAction(config, "repnet_refund_before_accept", { jobId }, "RepNet Refund Before Accept");
       break;
     }
 
-    case "accept-fail": {
-      const jobId = Number(args[1]);
-      const specIndex = Number(args[2]);
-      if (Number.isNaN(jobId) || Number.isNaN(specIndex)) {
-        console.error("Usage: repnet accept-fail <job-id> <spec-index>");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_accept_fail", { jobId, specIndex }, "Accept Fail");
+    case "submit-private-delivery": {
+      // Replaces the legacy repnet_submit_private_delivery action path: local signing only, no signerUrl callback.
+      await submitPrivateDeliveryLocally(config, parseJsonArg(args[1], "private delivery params"));
       break;
     }
 
-    case "contest-spec": {
-      const jobId = Number(args[1]);
-      const specIndex = Number(args[2]);
-      const evidenceURI = args[3];
-      if (Number.isNaN(jobId) || Number.isNaN(specIndex) || !evidenceURI) {
-        console.error("Usage: repnet contest-spec <job-id> <spec-index> <evidence-uri>");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_contest_spec", { jobId, specIndex, evidenceURI }, "Contest Spec");
+    case "resubmit-private-delivery": {
+      await resubmitPrivateDeliveryLocally(config, parseJsonArg(args[1], "private delivery resubmission params"));
       break;
     }
 
-    case "submit-evidence": {
+    case "delivery-precheck": {
+      await precheckPrivateDelivery(config, parseJsonArg(args[1], "delivery precheck params"));
+      break;
+    }
+
+    case "delivery-report": {
+      await getPrivateDeliveryReportLocally(config, args[1]);
+      break;
+    }
+
+    case "read-delivery": {
+      await readPrivateDeliveryLocally(config, args[1]);
+      break;
+    }
+
+    case "request-more-work": {
+      await executeAction(config, "repnet_request_more_work", parseJsonArg(args[1], "additional-work params"), "RepNet Additional Work Request");
+      break;
+    }
+
+    case "accept-more-work": {
       const jobId = Number(args[1]);
-      const specIndex = Number(args[2]);
-      const evidenceURI = args[3];
-      if (Number.isNaN(jobId) || Number.isNaN(specIndex) || !evidenceURI) {
-        console.error("Usage: repnet submit-evidence <job-id> <spec-index> <evidence-uri>");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_submit_evidence", { jobId, specIndex, evidenceURI }, "Submit Evidence");
+      if (Number.isNaN(jobId)) throw new Error("Usage: repnet accept-more-work <job-id>");
+      await executeAction(config, "repnet_accept_more_work", { jobId }, "RepNet Accept More Work");
+      break;
+    }
+
+    case "refuse-more-work": {
+      await executeAction(config, "repnet_refuse_more_work", parseJsonArg(args[1], "refuse additional-work params"), "RepNet Refuse More Work");
+      break;
+    }
+
+    case "release": {
+      const jobId = Number(args[1]);
+      if (Number.isNaN(jobId)) throw new Error("Usage: repnet release <job-id>");
+      await executeAction(config, "repnet_release", { jobId }, "RepNet Release");
+      break;
+    }
+
+    case "cancel": {
+      await executeAction(config, "repnet_cancel", parseJsonArg(args[1], "cancel params"), "RepNet Cancel");
       break;
     }
 
     case "job-status": {
       const jobId = Number(args[1]);
-      if (Number.isNaN(jobId)) {
-        console.error("Usage: repnet job-status <job-id>");
-        process.exit(1);
-      }
-      await executeAction(config, "repnet_job_status", { jobId }, "Job Status");
+      if (Number.isNaN(jobId)) throw new Error("Usage: repnet job-status <job-id>");
+      await executeAction(config, "repnet_job_status", { jobId }, "RepNet Job Status");
       break;
     }
 
@@ -430,7 +974,9 @@ Config: ${CONFIG_PATH}
   }
 }
 
-main().catch((e) => {
+main().then(() => {
+  process.exit(0);
+}).catch((e) => {
   console.error(`Error: ${e.message}`);
   process.exit(1);
 });

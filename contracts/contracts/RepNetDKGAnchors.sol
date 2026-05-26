@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @dev This contract intentionally does not store anchor state. RepNet core
  *      settlement contracts stay the source of truth; this sidecar emits a
  *      normalized event that indexers, publishers, dashboards, and agents can
- *      consume without bloating RepNetEscrow, which is already near EIP-170.
+ *      consume without bloating core job lifecycle contracts.
  *
  *      Use recordAnchor() for public/safe locators. Use recordAnchorHashOnly()
  *      for private or sensitive payloads where the locator itself should not be
@@ -18,7 +18,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  */
 contract RepNetDKGAnchors is Ownable {
     /// @notice RepNet contract suite release identifier.
-    string public constant REPNET_VERSION = "v10";
+    string public constant REPNET_VERSION = "release";
 
     enum AnchorType {
         AgentProfile,
